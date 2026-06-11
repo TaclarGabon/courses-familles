@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Courses Famille V2.3</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#f6f7fb;color:#172033}
+header{background:linear-gradient(135deg,#16a34a,#2563eb);color:white;padding:22px 18px;border-radius:0 0 24px 24px}
+header h1{margin:0;font-size:26px} header p{margin:6px 0 0}
+main{max-width:980px;margin:auto;padding:16px}
+.card{background:white;border-radius:18px;padding:16px;margin:14px 0;box-shadow:0 6px 20px rgba(0,0,0,.06)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+input,select,button{font-size:16px;border-radius:12px;border:1px solid #e5e7eb;padding:12px}
+input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:135px}
+button{border:none;background:#16a34a;color:white;font-weight:bold;cursor:pointer}
+.filters button,.secondary{background:#eef2ff;color:#1e3a8a;border:1px solid #dbeafe}.filters button.active{background:#2563eb;color:white}
+.warning{background:#f59e0b;color:white}.danger{background:#ef4444}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}
+.stat{background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:12px}.stat strong{font-size:22px;display:block}
+.quick{display:flex;gap:8px;flex-wrap:wrap}
+.qbtn{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0;font-weight:normal}
+.ebtn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;padding:8px}
+.xbtn{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:8px}
+.favwrap{display:flex;gap:4px;align-items:center;margin:3px}
+.item{display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:center;border-bottom:1px solid #e5e7eb;padding:10px 0}
+.item.done .main{text-decoration:line-through;color:#6b7280}.meta,.note{color:#6b7280;font-size:14px;line-height:1.4}.price{font-weight:bold}
+h2{font-size:19px;margin:0 0 12px}h3{margin:18px 0 8px;font-size:17px}.empty{color:#6b7280;padding:12px 0}
+label.check{display:flex;gap:8px;align-items:center;color:#6b7280;font-size:15px;margin-top:10px}
+#editBox{display:none;background:#fff7ed;border:1px solid #fed7aa}
+</style>
+</head>
+<body>
+<header><h1>🛒 Courses Famille V2.3</h1><p>Modification des prix des produits fréquents</p></header>
+<main>
+
+<section class="card" id="editBox">
+<h2>Modifier un produit fréquent</h2>
+<div class="row">
+<input id="editName" class="name" placeholder="Nom du produit">
+<input id="editPrice" class="small" inputmode="decimal" placeholder="Prix $">
+<select id="editStore"><option>Costco</option><option>Walmart</option><option>Superstore</option><option>No Frills</option><option>Autre</option></select>
+<select id="editCategory"><option>Viandes / Protéines</option><option>Produits laitiers</option><option>Légumes</option><option>Fruits</option><option>Keto / Boulangerie</option><option>Collations</option><option>Boissons</option><option>Épicerie</option><option>Ménager</option></select>
+<button class="warning" onclick="saveFavEdit()">Mettre à jour</button>
+<button class="secondary" onclick="cancelFavEdit()">Annuler</button>
+</div>
+<p class="note">Tu peux modifier le prix, le magasin, la catégorie ou le nom.</p>
+</section>
+
+<section class="card"><h2>Ajouter un produit</h2><div class="row">
+<input id="productName" class="name" placeholder="Ex: Œufs, Pain keto, Jus de mangue...">
+<input id="qty" class="small" type="number" min="1" value="1" placeholder="Qté">
+<input id="price" class="small" inputmode="decimal" placeholder="Prix $">
+<select id="store"><option>Costco</option><option>Walmart</option><option>Superstore</option><option>No Frills</option><option>Autre</option></select>
+<select id="person"><option>Famille</option><option>Edan</option><option>Otilia</option><option>Kayla</option></select>
+<select id="category"><option>Viandes / Protéines</option><option>Produits laitiers</option><option>Légumes</option><option>Fruits</option><option>Keto / Boulangerie</option><option>Collations</option><option>Boissons</option><option>Épicerie</option><option>Ménager</option></select>
+<button onclick="addItem()">Ajouter</button></div>
+<label class="check"><input id="saveFav" type="checkbox" checked> Ajouter aussi aux produits fréquents</label>
+<p class="note">Tu peux écrire 14,99 ou 14.99.</p></section>
+
+<section class="card"><h2>Produits fréquents personnalisables</h2>
+<div class="row"><button class="secondary" onclick="restoreFavs()">Restaurer la liste de départ</button></div><br>
+<div class="quick" id="quick"></div></section>
+
+<section class="card"><h2>Résumé budget</h2><div class="stats" id="stats"></div></section>
+<section class="card"><h2>Filtres</h2><p class="note">“Tous” affiche toute la liste. “Famille” affiche seulement les produits demandés pour tout le monde.</p><div class="row filters" id="storeFilters"></div><br><div class="row filters" id="personFilters"></div></section>
+<section class="card"><h2>Liste de courses</h2><div id="list"></div></section>
+<section class="card"><h2>Gestion</h2><button class="danger" onclick="clearChecked()">Supprimer les produits cochés</button> <button class="secondary" onclick="resetAll()">Réinitialiser toute l’application</button></section>
+</main>
+<script>
+const defaultFavs=[
+["Œufs","Costco","Viandes / Protéines",7.99],["Bacon","Costco","Viandes / Protéines",18.99],["Saumon fumé","Costco","Viandes / Protéines",19.99],["Magret de canard","Costco","Viandes / Protéines",24.99],["Saucisses piquantes","Costco","Viandes / Protéines",14.99],["Ailes de poulet","Costco","Viandes / Protéines",22.99],["Jambon","Costco","Viandes / Protéines",9.99],
+["Cream cheese","Costco","Produits laitiers",8.99],["Fromage râpé","Costco","Produits laitiers",14.99],["Fromage Kraft","Walmart","Produits laitiers",6.99],["Yaourts","Walmart","Produits laitiers",5.99],["Yogurt Kefir","Superstore","Produits laitiers",14.99],["Lait Kayla","Walmart","Produits laitiers",5.49],
+["Amandes","Costco","Collations",15.99],["Noix de cajou","Costco","Collations",16.99],["Gummies vitamines","Walmart","Collations",9.99],["Mentos Gum","Walmart","Collations",4.99],["Crackers Costco","Costco","Collations",9.99],
+["Épinards","Superstore","Légumes",4.49],["Brocolis","Superstore","Légumes",4.99],["Chou-fleur","Superstore","Légumes",4.99],["Champignons","Superstore","Légumes",3.99],["Poivrons","Superstore","Légumes",5.99],["Concombres","No Frills","Légumes",2.49],["Courgettes","No Frills","Légumes",3.99],["Haricots verts","Superstore","Légumes",4.99],["Romaine","No Frills","Légumes",5.99],["Baby carrots","Walmart","Légumes",3.99],["Citrons","Superstore","Légumes",4.99],["Ail","No Frills","Légumes",1.99],["Oignons","No Frills","Légumes",3.99],
+["Framboises","Superstore","Fruits",5.99],["Bleuets","Superstore","Fruits",5.99],
+["Pain keto","Walmart","Keto / Boulangerie",6.99],["Pain brioche Kayla","Walmart","Keto / Boulangerie",5.99],["Flat Bread keto","Costco","Keto / Boulangerie",8.99],
+["Jus de mangue","Walmart","Boissons",4.99],["Jus de citron","Walmart","Boissons",3.99],["Nesquik","Walmart","Boissons",7.99],
+["Splenda","Walmart","Épicerie",10.99],["Pépites de chocolat","Walmart","Épicerie",5.99],["Piment en bouteille","Autre","Épicerie",4.99],
+["Sacs poubelle 15 L","Costco","Ménager",12.99],["Essuie-tout","Costco","Ménager",24.99]
+];
+const $ = (id)=>document.getElementById(id);
+function makeFavs(){return defaultFavs.map((x,i)=>({id:Date.now()+i,name:x[0],store:x[1],category:x[2],price:x[3]}))}
+let items=JSON.parse(localStorage.getItem("cf_items_v23")||"[]");
+let favs=JSON.parse(localStorage.getItem("cf_favs_v23")||"null");
+if(!favs || favs.length===0){favs=makeFavs();}
+let prices=JSON.parse(localStorage.getItem("cf_prices_v23")||"{}");
+let storeFilter="Tous",personFilter="Tous", editingFavId=null;
+const stores=["Tous","Costco","Walmart","Superstore","No Frills","Autre"],people=["Tous","Famille","Edan","Otilia","Kayla"];
+function parseMoney(v){return Number(String(v||"0").replace(",", "."))||0}
+function money(n){return "$"+(Number(n)||0).toFixed(2)} function key(n,s){return n.trim().toLowerCase()+"|"+s}
+function save(){localStorage.setItem("cf_items_v23",JSON.stringify(items));localStorage.setItem("cf_favs_v23",JSON.stringify(favs));localStorage.setItem("cf_prices_v23",JSON.stringify(prices))}
+function suggestPrice(){let n=$("productName").value,s=$("store").value,p=prices[key(n,s)]; if(p && !$("price").value) $("price").value=String(p).replace(".",",")}
+$("productName").addEventListener("input",suggestPrice);$("store").addEventListener("change",suggestPrice);
+
+function addItem(){
+  let n=$("productName").value.trim(); if(!n){alert("Écris le nom du produit.");return}
+  let q=Number($("qty").value)||1,p=parseMoney($("price").value),s=$("store").value,per=$("person").value,c=$("category").value;
+  items.push({id:Date.now(),name:n,qty:q,price:p,store:s,person:per,category:c,done:false});
+  prices[key(n,s)]=p;
+  if($("saveFav").checked&&!favs.some(f=>f.name.toLowerCase()==n.toLowerCase()&&f.store==s)){
+    favs.push({id:Date.now()+1,name:n,store:s,category:c,price:p});
+  }
+  $("productName").value=""; $("qty").value=1; $("price").value="";
+  storeFilter=s; personFilter="Tous";
+  save(); render(); setTimeout(()=>$("list").scrollIntoView({behavior:"smooth"}),100);
+}
+function quickAdd(id){let f=favs.find(x=>x.id===id);items.push({id:Date.now(),name:f.name,qty:1,price:Number(f.price)||0,store:f.store,person:"Famille",category:f.category,done:false});storeFilter=f.store;personFilter="Tous";save();render();setTimeout(()=>$("list").scrollIntoView({behavior:"smooth"}),100)}
+function editFav(id){
+  let f=favs.find(x=>x.id===id); if(!f)return;
+  editingFavId=id;
+  $("editName").value=f.name; $("editPrice").value=String(f.price).replace(".",","); $("editStore").value=f.store; $("editCategory").value=f.category;
+  $("editBox").style.display="block"; $("editBox").scrollIntoView({behavior:"smooth"});
+}
+function saveFavEdit(){
+  if(editingFavId===null)return;
+  let old=favs.find(x=>x.id===editingFavId); if(!old)return;
+  let n=$("editName").value.trim(); if(!n){alert("Nom obligatoire.");return}
+  let p=parseMoney($("editPrice").value),s=$("editStore").value,c=$("editCategory").value;
+  favs=favs.map(f=>f.id===editingFavId?{...f,name:n,price:p,store:s,category:c}:f);
+  prices[key(n,s)]=p;
+  editingFavId=null; $("editBox").style.display="none";
+  save(); render();
+}
+function cancelFavEdit(){editingFavId=null;$("editBox").style.display="none"}
+function deleteFav(id){favs=favs.filter(f=>f.id!==id);save();render()} 
+function restoreFavs(){favs=makeFavs();save();render()}
+function toggle(id){items=items.map(i=>i.id===id?{...i,done:!i.done}:i);save();render()} 
+function del(id){items=items.filter(i=>i.id!==id);save();render()} 
+function clearChecked(){items=items.filter(i=>!i.done);save();render()}
+function resetAll(){if(confirm("Réinitialiser toute l’application ?")){localStorage.removeItem("cf_items_v23");localStorage.removeItem("cf_favs_v23");localStorage.removeItem("cf_prices_v23");location.reload()}}
+function filtered(){return items.filter(i=>(storeFilter=="Tous"||i.store==storeFilter)&&(personFilter=="Tous"||i.person==personFilter))}
+function render(){
+$("storeFilters").innerHTML=stores.map(s=>`<button class="${s==storeFilter?'active':''}" onclick="storeFilter='${s}';render()">${s}</button>`).join("");
+$("personFilters").innerHTML=people.map(p=>`<button class="${p==personFilter?'active':''}" onclick="personFilter='${p}';render()">${p}</button>`).join("");
+$("quick").innerHTML=favs.map(f=>`<span class="favwrap"><button class="qbtn" onclick="quickAdd(${f.id})">+ ${f.name} <small>(${f.store}, ${money(f.price)})</small></button><button class="ebtn" onclick="editFav(${f.id})">Modifier</button><button class="xbtn" onclick="deleteFav(${f.id})">x</button></span>`).join("");
+let data=filtered(),active=data.filter(i=>!i.done),total=active.reduce((s,i)=>s+(+i.qty||1)*(+i.price||0),0),by={};
+active.forEach(i=>by[i.store]=(by[i.store]||0)+(+i.qty||1)*(+i.price||0));
+$("stats").innerHTML=`<div class="stat"><strong>${active.length}</strong>Articles non cochés</div><div class="stat"><strong>${money(total)}</strong>Total estimé</div>`+stores.filter(s=>s!="Tous").map(s=>`<div class="stat"><strong>${money(by[s]||0)}</strong>${s}</div>`).join("");
+if(!data.length){$("list").innerHTML='<div class="empty">Aucun produit dans la liste de courses. Utilise les produits fréquents ci-dessus pour ajouter rapidement.</div>';return}
+let grouped={};data.forEach(i=>(grouped[i.store]??=[]).push(i));
+$("list").innerHTML=Object.keys(grouped).map(s=>`<h3>📍 ${s} — ${money(grouped[s].filter(i=>!i.done).reduce((a,i)=>a+(+i.qty||1)*(+i.price||0),0))}</h3>`+grouped[s].map(i=>`<div class="item ${i.done?'done':''}"><input type="checkbox" ${i.done?'checked':''} onclick="toggle(${i.id})"><div><div class="main">${i.name} — Qté: ${i.qty} — <span class="price">${money((+i.qty||1)*(+i.price||0))}</span></div><div class="meta">Prix unitaire: ${money(i.price)} · Demandé par: ${i.person} · ${i.category}</div></div><button class="danger" onclick="del(${i.id})">X</button></div>`).join("")).join("")
+}
+save();render();
+</script>
+</body>
+</html>
