@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Courses Famille V4.2 Login</title>
+<title>Courses Famille V4.3.1.1 Login Famille</title>
 <style>
 body{margin:0;font-family:Arial;background:#f6f7fb;color:#172033}
 header{background:linear-gradient(135deg,#16a34a,#2563eb);color:white;padding:18px;border-radius:0 0 22px 22px}
@@ -30,31 +30,33 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 .qbtn{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0}.ebtn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}.xbtn{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
 #editBox{display:none;background:#fff7ed}.storeBtns button{background:#eef2ff;color:#1e3a8a}.storeBtns button.active{background:#2563eb;color:white}
 #appArea{display:none}
-#loginArea input{min-width:240px}
+.familyLogin{display:grid;gap:12px;max-width:460px}
+.familyBadge{background:#eef2ff;color:#1e3a8a;border:1px solid #dbeafe;border-radius:16px;padding:14px;font-weight:bold;font-size:20px;text-align:center}
+#loginPassword{width:100%;box-sizing:border-box}
 </style>
 </head>
 <body>
 <header>
-<h1>🛒 Courses Famille V4.2</h1>
-<p id="syncStatus">Connexion requise</p>
+<h1>🛒 Courses Famille V4.3.1</h1>
+<p id="syncStatus">Connexion familiale requise</p>
 </header>
 
 <main>
 <section id="loginArea" class="card">
 <h2>Connexion familiale</h2>
-<p class="note">Connecte-toi avec l’adresse email et le mot de passe créés dans Firebase Authentication.</p>
-<div class="row">
-<input id="loginEmail" class="name" type="email" placeholder="Email">
-<input id="loginPassword" class="name" type="password" placeholder="Mot de passe">
+<div class="familyLogin">
+<div class="familyBadge">👨‍👩‍👧 Famille Edan</div>
+<p class="note">Entrez seulement le mot de passe familial. L’adresse e-mail Firebase est utilisée automatiquement en arrière-plan.</p>
+<input id="loginPassword" type="password" placeholder="Mot de passe familial">
 <button onclick="login()">Se connecter</button>
-</div>
 <p id="loginMsg" class="note"></p>
+</div>
 </section>
 
 <section id="appArea">
 <div class="card">
 <div class="row">
-<strong id="userInfo">Connecté</strong>
+<strong id="userInfo">Connecté : Famille</strong>
 <button class="danger" onclick="logout()">Déconnexion</button>
 </div>
 </div>
@@ -79,7 +81,7 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 <button onclick="addItem()">Ajouter</button>
 </div>
 <div id="suggestions" class="suggestions"></div>
-<p class="note">V4.2 : données protégées par connexion Firebase Auth.</p>
+<p class="note">V4.3.1 : connexion simplifiée “Famille” + données protégées par Firebase Auth.</p>
 </div>
 <div class="card"><h2>Résumé</h2><div id="stats" class="stats"></div></div>
 <div class="card"><h2>Liste</h2><div id="list"></div></div>
@@ -110,7 +112,7 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 <button class="danger" onclick="clearChecked()">Supprimer cochés</button>
 <button class="secondary" onclick="restoreFavs()">Restaurer fréquents</button>
 <button class="secondary" onclick="resetAll()">Réinitialiser</button>
-<p class="note">Règles Firebase recommandées : lecture/écriture uniquement si auth != null.</p>
+<p class="note">Cette version garde un seul accès familial simple. Les règles Firebase restent : auth != null.</p>
 </div>
 </section>
 </section>
@@ -120,6 +122,8 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import { getDatabase, ref, onValue, set, off } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+
+const FAMILY_EMAIL = "judicael.edanngomo@gmail.com";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCjOuSVrCUvmYp7_fhABdBuOVMgQH6HIDE",
@@ -153,6 +157,7 @@ function makeFavs(){ return base.map((x,i)=>({id: Date.now()+i, name:x[0], store
 let items = [];
 let favs = makeFavs();
 let activeStore = "Costco";
+window.selectStore = function(storeName){ activeStore = storeName; render(); };
 let editingFavId = null;
 let applyingRemote = false;
 let dataRef = null;
@@ -168,12 +173,14 @@ function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
 window.login = async function(){
   $("loginMsg").textContent = "Connexion...";
   try {
-    await signInWithEmailAndPassword(auth, $("loginEmail").value.trim(), $("loginPassword").value);
+    await signInWithEmailAndPassword(auth, FAMILY_EMAIL, $("loginPassword").value);
     $("loginPassword").value = "";
   } catch(e) {
-    $("loginMsg").textContent = "Erreur : " + e.message;
+    $("loginMsg").textContent = "Mot de passe incorrect ou connexion impossible.";
   }
 };
+
+$("loginPassword").addEventListener("keydown", e=>{ if(e.key==="Enter") window.login(); });
 
 window.logout = async function(){ await signOut(auth); };
 
@@ -181,7 +188,7 @@ onAuthStateChanged(auth, (user)=>{
   if(user){
     $("loginArea").style.display = "none";
     $("appArea").style.display = "block";
-    $("userInfo").textContent = "Connecté : " + user.email;
+    $("userInfo").textContent = "Connecté : Famille Edan";
     $("syncStatus").textContent = "✅ Connecté, synchronisation en cours...";
     startSync();
   } else {
@@ -189,7 +196,7 @@ onAuthStateChanged(auth, (user)=>{
     dataRef = null;
     $("loginArea").style.display = "block";
     $("appArea").style.display = "none";
-    $("syncStatus").textContent = "Connexion requise";
+    $("syncStatus").textContent = "Connexion familiale requise";
   }
 });
 
@@ -203,9 +210,9 @@ function startSync(){
       favs = Array.isArray(data.favs) ? data.favs : makeFavs();
       $("syncStatus").textContent = "✅ Synchronisation protégée active";
     } else {
-      items = JSON.parse(localStorage.getItem("cf_items_v42") || "[]");
-      favs = JSON.parse(localStorage.getItem("cf_favs_v42") || "null") || makeFavs();
-      set(dataRef, { items, favs, updatedAt: new Date().toISOString(), version: "4.2-login" });
+      items = JSON.parse(localStorage.getItem("cf_items_v43") || "[]");
+      favs = JSON.parse(localStorage.getItem("cf_favs_v43") || "null") || makeFavs();
+      set(dataRef, { items, favs, updatedAt: new Date().toISOString(), version: "4.3.1-family-login" });
       $("syncStatus").textContent = "✅ Base protégée créée";
     }
     saveLocal();
@@ -217,14 +224,14 @@ function startSync(){
 }
 
 function saveLocal(){
-  localStorage.setItem("cf_items_v42", JSON.stringify(items));
-  localStorage.setItem("cf_favs_v42", JSON.stringify(favs));
+  localStorage.setItem("cf_items_v43", JSON.stringify(items));
+  localStorage.setItem("cf_favs_v43", JSON.stringify(favs));
 }
 
 async function writeCloud(){
   if(applyingRemote || !dataRef) return;
   saveLocal();
-  await set(dataRef, {items, favs, updatedAt: new Date().toISOString(), version:"4.2-login"});
+  await set(dataRef, {items, favs, updatedAt: new Date().toISOString(), version:"4.3.1-family-login"});
   render();
 }
 
@@ -326,7 +333,7 @@ function render(){
     $("list").innerHTML = Object.keys(grouped).map(s=>`<h3>📍 ${s}</h3>` + grouped[s].map(i=>`<div class="item ${i.done?'done':''}"><input type="checkbox" ${i.done?'checked':''} onclick="toggle(${i.id})"><div><div class="main">${i.name} — Qté: ${i.qty} — <span class="price">${money((Number(i.qty)||1)*(Number(i.price)||0))}</span></div><div class="meta">${i.category} · ${i.person} · Prix: ${money(i.price)}</div></div><button class="danger" onclick="del(${i.id})">X</button></div>`).join("")).join("");
   }
 
-  $("storeBtns").innerHTML = stores.map(s=>`<button class="${s===activeStore?'active':''}" onclick="activeStore='${s}';render()">${s}</button>`).join("");
+  $("storeBtns").innerHTML = stores.map(s=>`<button class="${s===activeStore?'active':''}" onclick="selectStore('${s}')">${s}</button>`).join("");
   const ps = favs.filter(f=>f.store===activeStore).sort((a,b)=>a.name.localeCompare(b.name));
   $("storeProducts").innerHTML = `<h3>${activeStore} (${ps.length})</h3>` + ps.map(f=>`<div class="product"><div><b>${f.name}</b><div class="meta">${f.category} · ${money(f.price)}</div></div><div><button onclick="quickAdd(${f.id})">Ajouter</button> <button class="ebtn" onclick="showTab('fav');editFav(${f.id})">Modifier</button></div></div>`).join("");
 }
