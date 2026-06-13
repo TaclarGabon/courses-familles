@@ -1,1 +1,336 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Courses Famille V4.1 Sync</title><style>body{margin:0;font-family:Arial;background:#f6f7fb;color:#172033}header{background:linear-gradient(135deg,#16a34a,#2563eb);color:white;padding:18px;border-radius:0 0 22px 22px}h1{margin:0;font-size:24px}main{max-width:950px;margin:auto;padding:12px}.card{background:white;border-radius:16px;padding:14px;margin:12px 0;box-shadow:0 4px 14px #0001}.tabs{display:flex;gap:8px;overflow:auto;position:sticky;top:0;background:#f6f7fb;padding:8px 0;z-index:5}.tabs button{background:#eef2ff;color:#1e3a8a;border:1px solid #dbeafe;white-space:nowrap}.tabs button.active{background:#2563eb;color:white}.row{display:flex;gap:8px;flex-wrap:wrap}input,select,button{font-size:16px;border-radius:12px;border:1px solid #e5e7eb;padding:11px}button{border:0;background:#16a34a;color:white;font-weight:bold;cursor:pointer}input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}.panel{display:none}.panel.active{display:block}.secondary{background:#eef2ff;color:#1e3a8a;border:1px solid #dbeafe}.danger{background:#ef4444}.warning{background:#f59e0b}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}.stat{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:11px}.stat strong{font-size:21px;display:block}.item,.product{display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:center;border-bottom:1px solid #eee;padding:9px 0}.product{grid-template-columns:1fr auto}.done .main{text-decoration:line-through;color:#6b7280}.meta,.note{color:#6b7280;font-size:14px}.price{font-weight:bold}.suggestions{display:none;border:1px solid #ddd;border-radius:12px;background:white;max-height:220px;overflow:auto;margin-top:6px}.suggestions div{padding:10px;border-bottom:1px solid #eee;cursor:pointer}.q{display:flex;gap:6px;flex-wrap:wrap}.q button{margin:3px}.qbtn{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0}.ebtn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}.xbtn{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}#editBox{display:none;background:#fff7ed}.storeBtns button{background:#eef2ff;color:#1e3a8a}.storeBtns button.active{background:#2563eb;color:white}</style></head><body><header><h1>🛒 Courses Famille V4.1 Sync</h1><p id="syncStatus">Connexion Firebase...</p></header><main><div class="tabs"><button id="tabListBtn" class="active" onclick="showTab('list')">🛒 Liste</button><button id="tabStoreBtn" onclick="showTab('store')">🏪 Par magasin</button><button id="tabFavBtn" onclick="showTab('fav')">⭐ Fréquents</button><button id="tabToolsBtn" onclick="showTab('tools')">⚙️ Outils</button></div><section id="panelList" class="panel active"><div class="card"><h2>Rechercher / ajouter</h2><div class="row"><input id="productName" class="name" placeholder="Amandes, œufs, kefir..." autocomplete="off"><input id="qty" class="small" type="number" min="1" value="1"><input id="price" class="small" inputmode="decimal" placeholder="Prix $"><select id="store"><option>Costco</option><option>Walmart</option><option>Superstore</option><option>No Frills</option><option>Autre</option></select><select id="person"><option>Famille</option><option>Edan</option><option>Otilia</option><option>Kayla</option></select><select id="category"><option>Viandes / Protéines</option><option>Produits laitiers</option><option>Légumes</option><option>Fruits</option><option>Keto / Boulangerie</option><option>Collations</option><option>Boissons</option><option>Épicerie</option><option>Ménager</option></select><button onclick="addItem()">Ajouter</button></div><div id="suggestions" class="suggestions"></div><p class="note">V4.1 écrit directement dans Firebase Realtime Database.</p></div><div class="card"><h2>Résumé</h2><div id="stats" class="stats"></div></div><div class="card"><h2>Liste</h2><div id="list"></div></div></section><section id="panelStore" class="panel"><div class="card"><h2>Produits par magasin</h2><div id="storeBtns" class="row storeBtns"></div><div id="storeProducts"></div></div></section><section id="panelFav" class="panel"><div id="editBox" class="card"><h2>Modifier un produit fréquent</h2><div class="row"><input id="editName" class="name"><input id="editPrice" class="small" inputmode="decimal"><select id="editStore"><option>Costco</option><option>Walmart</option><option>Superstore</option><option>No Frills</option><option>Autre</option></select><select id="editCategory"><option>Viandes / Protéines</option><option>Produits laitiers</option><option>Légumes</option><option>Fruits</option><option>Keto / Boulangerie</option><option>Collations</option><option>Boissons</option><option>Épicerie</option><option>Ménager</option></select><button class="warning" onclick="saveFavEdit()">Mettre à jour</button><button class="secondary" onclick="cancelFavEdit()">Annuler</button></div></div><div class="card"><h2>Produits fréquents</h2><details><summary>Ouvrir / fermer (<span id="favCount"></span>)</summary><div id="quick" class="q"></div></details></div></section><section id="panelTools" class="panel"><div class="card"><h2>Outils</h2><button class="danger" onclick="clearChecked()">Supprimer cochés</button> <button class="secondary" onclick="restoreFavs()">Restaurer fréquents</button> <button class="secondary" onclick="resetAll()">Réinitialiser</button><p class="note">Test : après un ajout, Firebase ne doit plus afficher null.</p></div></section></main><script type="module">import{initializeApp}from'https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js';import{getDatabase,ref,onValue,set}from'https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js';const firebaseConfig={apiKey:'AIzaSyCjOuSVrCUvmYp7_fhABdBuOVMgQH6HIDE',authDomain:'courses-famille-5a769.firebaseapp.com',databaseURL:'https://courses-famille-5a769-default-rtdb.firebaseio.com',projectId:'courses-famille-5a769',storageBucket:'courses-famille-5a769.firebasestorage.app',messagingSenderId:'499582014641',appId:'1:499582014641:web:5cf393c024e9fe97467e90',measurementId:'G-Z1DCYGNW8S'};const $=id=>document.getElementById(id),stores=['Costco','Walmart','Superstore','No Frills','Autre'];const base=[['Œufs','Costco','Viandes / Protéines',7.99],['Bacon','Costco','Viandes / Protéines',18.99],['Saumon fumé','Costco','Viandes / Protéines',19.99],['Magret de canard','Costco','Viandes / Protéines',24.99],['Ailes de poulet','Costco','Viandes / Protéines',22.99],['Cream cheese','Costco','Produits laitiers',8.99],['Fromage râpé','Costco','Produits laitiers',14.99],['Yogurt Kefir','Superstore','Produits laitiers',14.99],['Lait Kayla','Walmart','Produits laitiers',5.49],['Amandes','Costco','Collations',15.99],['Noix de cajou','Costco','Collations',16.99],['Épinards','Superstore','Légumes',4.49],['Brocolis','Superstore','Légumes',4.99],['Concombres','No Frills','Légumes',2.49],['Framboises','Superstore','Fruits',5.99],['Bleuets','Superstore','Fruits',5.99],['Pain keto','Walmart','Keto / Boulangerie',6.99],['Jus de mangue','Walmart','Boissons',4.99],['Splenda','Walmart','Épicerie',10.99],['Sacs poubelle 15 L','Costco','Ménager',12.99],['Essuie-tout','Costco','Ménager',24.99]];function makeFavs(){return base.map((x,i)=>({id:Date.now()+i,name:x[0],store:x[1],category:x[2],price:x[3],uses:0}))}let items=[],favs=makeFavs(),activeStore='Costco',editingFavId=null,applyingRemote=false;const app=initializeApp(firebaseConfig),db=getDatabase(app),dataRef=ref(db,'coursesFamille/edanFamily');function parseMoney(v){return Number(String(v||'0').replace(',','.'))||0}function money(n){return '$'+(Number(n)||0).toFixed(2)}function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}function saveLocal(){localStorage.setItem('cf_items_v41',JSON.stringify(items));localStorage.setItem('cf_favs_v41',JSON.stringify(favs))}async function writeCloud(){if(applyingRemote)return;saveLocal();await set(dataRef,{items,favs,updatedAt:new Date().toISOString(),version:'4.1'});$('syncStatus').textContent='✅ Synchronisation Firebase active';render()}onValue(dataRef,snapshot=>{applyingRemote=true;const data=snapshot.val();if(data){items=Array.isArray(data.items)?data.items:[];favs=Array.isArray(data.favs)?data.favs:makeFavs();$('syncStatus').textContent='✅ Synchronisation Firebase active'}else{items=JSON.parse(localStorage.getItem('cf_items_v41')||'[]');favs=JSON.parse(localStorage.getItem('cf_favs_v41')||'null')||makeFavs();$('syncStatus').textContent='✅ Firebase vide : création de la base...';set(dataRef,{items,favs,updatedAt:new Date().toISOString(),version:'4.1'})}saveLocal();render();applyingRemote=false},error=>{$('syncStatus').textContent='❌ Erreur Firebase : '+error.message;items=JSON.parse(localStorage.getItem('cf_items_v41')||'[]');favs=JSON.parse(localStorage.getItem('cf_favs_v41')||'null')||makeFavs();render()});window.showTab=function(t){['list','store','fav','tools'].forEach(x=>{$('panel'+cap(x)).classList.remove('active');$('tab'+cap(x)+'Btn').classList.remove('active')});$('panel'+cap(t)).classList.add('active');$('tab'+cap(t)+'Btn').classList.add('active');render()};$('productName').addEventListener('input',()=>{const q=$('productName').value.toLowerCase().trim();if(!q){$('suggestions').style.display='none';return}const hits=favs.filter(f=>f.name.toLowerCase().includes(q)).slice(0,12);$('suggestions').innerHTML=hits.map(f=>`<div onclick="selectProduct(${f.id})"><b>${f.name}</b><br><small>${f.category} · ${f.store} · ${money(f.price)}</small></div>`).join('');$('suggestions').style.display=hits.length?'block':'none'});window.selectProduct=function(id){const f=favs.find(x=>x.id===id);if(!f)return;$('productName').value=f.name;$('price').value=String(f.price).replace('.',',');$('store').value=f.store;$('category').value=f.category;$('suggestions').style.display='none'};window.addItem=async function(){let n=$('productName').value.trim();if(!n){alert('Écris le produit.');return}let q=Number($('qty').value)||1,p=parseMoney($('price').value),s=$('store').value,per=$('person').value,c=$('category').value;items.push({id:Date.now(),name:n,qty:q,price:p,store:s,person:per,category:c,done:false});let f=favs.find(x=>x.name.toLowerCase()===n.toLowerCase()&&x.store===s);if(f){f.price=p;f.category=c;f.uses=(f.uses||0)+1}else{favs.push({id:Date.now()+1,name:n,store:s,category:c,price:p,uses:1})}$('productName').value='';$('qty').value=1;$('price').value='';try{await writeCloud()}catch(e){$('syncStatus').textContent='❌ Écriture Firebase échouée : '+e.message;alert('Erreur Firebase: '+e.message);render()}};window.quickAdd=async function(id){const f=favs.find(x=>x.id===id);if(!f)return;f.uses=(f.uses||0)+1;items.push({id:Date.now(),name:f.name,qty:1,price:Number(f.price)||0,store:f.store,person:'Famille',category:f.category,done:false});await writeCloud()};window.editFav=function(id){const f=favs.find(x=>x.id===id);if(!f)return;editingFavId=id;$('editName').value=f.name;$('editPrice').value=String(f.price).replace('.',',');$('editStore').value=f.store;$('editCategory').value=f.category;$('editBox').style.display='block';$('editBox').scrollIntoView({behavior:'smooth'})};window.saveFavEdit=async function(){let n=$('editName').value.trim(),p=parseMoney($('editPrice').value),s=$('editStore').value,c=$('editCategory').value;favs=favs.map(f=>f.id===editingFavId?{...f,name:n,price:p,store:s,category:c}:f);editingFavId=null;$('editBox').style.display='none';await writeCloud()};window.cancelFavEdit=function(){editingFavId=null;$('editBox').style.display='none'};window.deleteFav=async function(id){favs=favs.filter(f=>f.id!==id);await writeCloud()};window.toggle=async function(id){items=items.map(i=>i.id===id?{...i,done:!i.done}:i);await writeCloud()};window.del=async function(id){items=items.filter(i=>i.id!==id);await writeCloud()};window.clearChecked=async function(){items=items.filter(i=>!i.done);await writeCloud()};window.restoreFavs=async function(){if(confirm('Restaurer les produits fréquents ?')){favs=makeFavs();await writeCloud()}};window.resetAll=async function(){if(confirm('Tout effacer ?')){items=[];favs=makeFavs();await writeCloud()}};function render(){$('favCount').textContent=favs.length;$('quick').innerHTML=favs.map(f=>`<span class="favwrap"><button class="qbtn" onclick="quickAdd(${f.id})">+ ${f.name} <small>(${f.store}, ${money(f.price)})</small></button><button class="ebtn" onclick="editFav(${f.id})">Modifier</button><button class="xbtn" onclick="deleteFav(${f.id})">x</button></span>`).join('');const active=items.filter(i=>!i.done),total=active.reduce((s,i)=>s+(Number(i.qty)||1)*(Number(i.price)||0),0),by={};active.forEach(i=>by[i.store]=(by[i.store]||0)+(Number(i.qty)||1)*(Number(i.price)||0));$('stats').innerHTML=`<div class="stat"><strong>${active.length}</strong>Articles</div><div class="stat"><strong>${money(total)}</strong>Total estimé</div>`+stores.map(s=>`<div class="stat"><strong>${money(by[s]||0)}</strong>${s}</div>`).join('');if(!items.length){$('list').innerHTML='<div class="empty">Aucun produit.</div>'}else{const grouped={};items.forEach(i=>(grouped[i.store]??=[]).push(i));$('list').innerHTML=Object.keys(grouped).map(s=>`<h3>📍 ${s}</h3>`+grouped[s].map(i=>`<div class="item ${i.done?'done':''}"><input type="checkbox" ${i.done?'checked':''} onclick="toggle(${i.id})"><div><div class="main">${i.name} — Qté: ${i.qty} — <span class="price">${money((Number(i.qty)||1)*(Number(i.price)||0))}</span></div><div class="meta">${i.category} · ${i.person} · Prix: ${money(i.price)}</div></div><button class="danger" onclick="del(${i.id})">X</button></div>`).join('')).join('')}$('storeBtns').innerHTML=stores.map(s=>`<button class="${s===activeStore?'active':''}" onclick="activeStore='${s}';render()">${s}</button>`).join('');const ps=favs.filter(f=>f.store===activeStore).sort((a,b)=>a.name.localeCompare(b.name));$('storeProducts').innerHTML=`<h3>${activeStore} (${ps.length})</h3>`+ps.map(f=>`<div class="product"><div><b>${f.name}</b><div class="meta">${f.category} · ${money(f.price)}</div></div><div><button onclick="quickAdd(${f.id})">Ajouter</button> <button class="ebtn" onclick="showTab('fav');editFav(${f.id})">Modifier</button></div></div>`).join('')}render();</script></body></html>
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Courses Famille V4.2 Login</title>
+<style>
+body{margin:0;font-family:Arial;background:#f6f7fb;color:#172033}
+header{background:linear-gradient(135deg,#16a34a,#2563eb);color:white;padding:18px;border-radius:0 0 22px 22px}
+h1{margin:0;font-size:24px}header p{margin:6px 0 0}
+main{max-width:950px;margin:auto;padding:12px}
+.card{background:white;border-radius:16px;padding:14px;margin:12px 0;box-shadow:0 4px 14px #0001}
+.tabs{display:flex;gap:8px;overflow:auto;position:sticky;top:0;background:#f6f7fb;padding:8px 0;z-index:5}
+.tabs button{background:#eef2ff;color:#1e3a8a;border:1px solid #dbeafe;white-space:nowrap}
+.tabs button.active{background:#2563eb;color:white}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+input,select,button{font-size:16px;border-radius:12px;border:1px solid #e5e7eb;padding:11px}
+button{border:0;background:#16a34a;color:white;font-weight:bold;cursor:pointer}
+input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
+.panel{display:none}.panel.active{display:block}
+.secondary{background:#eef2ff;color:#1e3a8a;border:1px solid #dbeafe}.danger{background:#ef4444}.warning{background:#f59e0b}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.stat{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:11px}.stat strong{font-size:21px;display:block}
+.item,.product{display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:center;border-bottom:1px solid #eee;padding:9px 0}
+.product{grid-template-columns:1fr auto}.done .main{text-decoration:line-through;color:#6b7280}
+.meta,.note{color:#6b7280;font-size:14px;line-height:1.35}.price{font-weight:bold}
+.suggestions{display:none;border:1px solid #ddd;border-radius:12px;background:white;max-height:220px;overflow:auto;margin-top:6px}
+.suggestions div{padding:10px;border-bottom:1px solid #eee;cursor:pointer}
+.q{display:flex;gap:6px;flex-wrap:wrap}.q button{margin:3px}
+.qbtn{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0}.ebtn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}.xbtn{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+#editBox{display:none;background:#fff7ed}.storeBtns button{background:#eef2ff;color:#1e3a8a}.storeBtns button.active{background:#2563eb;color:white}
+#appArea{display:none}
+#loginArea input{min-width:240px}
+</style>
+</head>
+<body>
+<header>
+<h1>🛒 Courses Famille V4.2</h1>
+<p id="syncStatus">Connexion requise</p>
+</header>
+
+<main>
+<section id="loginArea" class="card">
+<h2>Connexion familiale</h2>
+<p class="note">Connecte-toi avec l’adresse email et le mot de passe créés dans Firebase Authentication.</p>
+<div class="row">
+<input id="loginEmail" class="name" type="email" placeholder="Email">
+<input id="loginPassword" class="name" type="password" placeholder="Mot de passe">
+<button onclick="login()">Se connecter</button>
+</div>
+<p id="loginMsg" class="note"></p>
+</section>
+
+<section id="appArea">
+<div class="card">
+<div class="row">
+<strong id="userInfo">Connecté</strong>
+<button class="danger" onclick="logout()">Déconnexion</button>
+</div>
+</div>
+
+<div class="tabs">
+<button id="tabListBtn" class="active" onclick="showTab('list')">🛒 Liste</button>
+<button id="tabStoreBtn" onclick="showTab('store')">🏪 Par magasin</button>
+<button id="tabFavBtn" onclick="showTab('fav')">⭐ Fréquents</button>
+<button id="tabToolsBtn" onclick="showTab('tools')">⚙️ Outils</button>
+</div>
+
+<section id="panelList" class="panel active">
+<div class="card">
+<h2>Rechercher / ajouter</h2>
+<div class="row">
+<input id="productName" class="name" placeholder="Amandes, œufs, kefir..." autocomplete="off">
+<input id="qty" class="small" type="number" min="1" value="1">
+<input id="price" class="small" inputmode="decimal" placeholder="Prix $">
+<select id="store"><option>Costco</option><option>Walmart</option><option>Superstore</option><option>No Frills</option><option>Autre</option></select>
+<select id="person"><option>Famille</option><option>Edan</option><option>Otilia</option><option>Kayla</option></select>
+<select id="category"><option>Viandes / Protéines</option><option>Produits laitiers</option><option>Légumes</option><option>Fruits</option><option>Keto / Boulangerie</option><option>Collations</option><option>Boissons</option><option>Épicerie</option><option>Ménager</option></select>
+<button onclick="addItem()">Ajouter</button>
+</div>
+<div id="suggestions" class="suggestions"></div>
+<p class="note">V4.2 : données protégées par connexion Firebase Auth.</p>
+</div>
+<div class="card"><h2>Résumé</h2><div id="stats" class="stats"></div></div>
+<div class="card"><h2>Liste</h2><div id="list"></div></div>
+</section>
+
+<section id="panelStore" class="panel">
+<div class="card"><h2>Produits par magasin</h2><div id="storeBtns" class="row storeBtns"></div><div id="storeProducts"></div></div>
+</section>
+
+<section id="panelFav" class="panel">
+<div id="editBox" class="card">
+<h2>Modifier un produit fréquent</h2>
+<div class="row">
+<input id="editName" class="name">
+<input id="editPrice" class="small" inputmode="decimal">
+<select id="editStore"><option>Costco</option><option>Walmart</option><option>Superstore</option><option>No Frills</option><option>Autre</option></select>
+<select id="editCategory"><option>Viandes / Protéines</option><option>Produits laitiers</option><option>Légumes</option><option>Fruits</option><option>Keto / Boulangerie</option><option>Collations</option><option>Boissons</option><option>Épicerie</option><option>Ménager</option></select>
+<button class="warning" onclick="saveFavEdit()">Mettre à jour</button>
+<button class="secondary" onclick="cancelFavEdit()">Annuler</button>
+</div>
+</div>
+<div class="card"><h2>Produits fréquents</h2><details><summary>Ouvrir / fermer (<span id="favCount"></span>)</summary><div id="quick" class="q"></div></details></div>
+</section>
+
+<section id="panelTools" class="panel">
+<div class="card">
+<h2>Outils</h2>
+<button class="danger" onclick="clearChecked()">Supprimer cochés</button>
+<button class="secondary" onclick="restoreFavs()">Restaurer fréquents</button>
+<button class="secondary" onclick="resetAll()">Réinitialiser</button>
+<p class="note">Règles Firebase recommandées : lecture/écriture uniquement si auth != null.</p>
+</div>
+</section>
+</section>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import { getDatabase, ref, onValue, set, off } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCjOuSVrCUvmYp7_fhABdBuOVMgQH6HIDE",
+  authDomain: "courses-famille-5a769.firebaseapp.com",
+  databaseURL: "https://courses-famille-5a769-default-rtdb.firebaseio.com",
+  projectId: "courses-famille-5a769",
+  storageBucket: "courses-famille-5a769.firebasestorage.app",
+  messagingSenderId: "499582014641",
+  appId: "1:499582014641:web:5cf393c024e9fe97467e90",
+  measurementId: "G-Z1DCYGNW8S"
+};
+
+const $ = id => document.getElementById(id);
+const stores = ["Costco","Walmart","Superstore","No Frills","Autre"];
+const base = [
+["Œufs","Costco","Viandes / Protéines",7.99],["Bacon","Costco","Viandes / Protéines",18.99],
+["Saumon fumé","Costco","Viandes / Protéines",19.99],["Magret de canard","Costco","Viandes / Protéines",24.99],
+["Ailes de poulet","Costco","Viandes / Protéines",22.99],["Cream cheese","Costco","Produits laitiers",8.99],
+["Fromage râpé","Costco","Produits laitiers",14.99],["Yogurt Kefir","Superstore","Produits laitiers",14.99],
+["Lait Kayla","Walmart","Produits laitiers",5.49],["Amandes","Costco","Collations",15.99],
+["Noix de cajou","Costco","Collations",16.99],["Épinards","Superstore","Légumes",4.49],
+["Brocolis","Superstore","Légumes",4.99],["Concombres","No Frills","Légumes",2.49],
+["Framboises","Superstore","Fruits",5.99],["Bleuets","Superstore","Fruits",5.99],
+["Pain keto","Walmart","Keto / Boulangerie",6.99],["Jus de mangue","Walmart","Boissons",4.99],
+["Splenda","Walmart","Épicerie",10.99],["Sacs poubelle 15 L","Costco","Ménager",12.99],
+["Essuie-tout","Costco","Ménager",24.99]
+];
+
+function makeFavs(){ return base.map((x,i)=>({id: Date.now()+i, name:x[0], store:x[1], category:x[2], price:x[3], uses:0})); }
+
+let items = [];
+let favs = makeFavs();
+let activeStore = "Costco";
+let editingFavId = null;
+let applyingRemote = false;
+let dataRef = null;
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+function parseMoney(v){ return Number(String(v||"0").replace(",",".")) || 0; }
+function money(n){ return "$" + (Number(n)||0).toFixed(2); }
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+window.login = async function(){
+  $("loginMsg").textContent = "Connexion...";
+  try {
+    await signInWithEmailAndPassword(auth, $("loginEmail").value.trim(), $("loginPassword").value);
+    $("loginPassword").value = "";
+  } catch(e) {
+    $("loginMsg").textContent = "Erreur : " + e.message;
+  }
+};
+
+window.logout = async function(){ await signOut(auth); };
+
+onAuthStateChanged(auth, (user)=>{
+  if(user){
+    $("loginArea").style.display = "none";
+    $("appArea").style.display = "block";
+    $("userInfo").textContent = "Connecté : " + user.email;
+    $("syncStatus").textContent = "✅ Connecté, synchronisation en cours...";
+    startSync();
+  } else {
+    if(dataRef) off(dataRef);
+    dataRef = null;
+    $("loginArea").style.display = "block";
+    $("appArea").style.display = "none";
+    $("syncStatus").textContent = "Connexion requise";
+  }
+});
+
+function startSync(){
+  dataRef = ref(db, "coursesFamille/edanFamily");
+  onValue(dataRef, (snapshot)=>{
+    applyingRemote = true;
+    const data = snapshot.val();
+    if(data){
+      items = Array.isArray(data.items) ? data.items : [];
+      favs = Array.isArray(data.favs) ? data.favs : makeFavs();
+      $("syncStatus").textContent = "✅ Synchronisation protégée active";
+    } else {
+      items = JSON.parse(localStorage.getItem("cf_items_v42") || "[]");
+      favs = JSON.parse(localStorage.getItem("cf_favs_v42") || "null") || makeFavs();
+      set(dataRef, { items, favs, updatedAt: new Date().toISOString(), version: "4.2-login" });
+      $("syncStatus").textContent = "✅ Base protégée créée";
+    }
+    saveLocal();
+    render();
+    applyingRemote = false;
+  }, (error)=>{
+    $("syncStatus").textContent = "❌ Erreur Firebase : " + error.message;
+  });
+}
+
+function saveLocal(){
+  localStorage.setItem("cf_items_v42", JSON.stringify(items));
+  localStorage.setItem("cf_favs_v42", JSON.stringify(favs));
+}
+
+async function writeCloud(){
+  if(applyingRemote || !dataRef) return;
+  saveLocal();
+  await set(dataRef, {items, favs, updatedAt: new Date().toISOString(), version:"4.2-login"});
+  render();
+}
+
+window.showTab = function(t){
+  ["list","store","fav","tools"].forEach(x=>{
+    $("panel"+cap(x)).classList.remove("active");
+    $("tab"+cap(x)+"Btn").classList.remove("active");
+  });
+  $("panel"+cap(t)).classList.add("active");
+  $("tab"+cap(t)+"Btn").classList.add("active");
+  render();
+};
+
+$("productName").addEventListener("input", ()=>{
+  const q = $("productName").value.toLowerCase().trim();
+  if(!q){ $("suggestions").style.display="none"; return; }
+  const hits = favs.filter(f=>f.name.toLowerCase().includes(q)).slice(0,12);
+  $("suggestions").innerHTML = hits.map(f=>`<div onclick="selectProduct(${f.id})"><b>${f.name}</b><br><small>${f.category} · ${f.store} · ${money(f.price)}</small></div>`).join("");
+  $("suggestions").style.display = hits.length ? "block" : "none";
+});
+
+window.selectProduct = function(id){
+  const f = favs.find(x=>x.id===id);
+  if(!f) return;
+  $("productName").value = f.name;
+  $("price").value = String(f.price).replace(".",",");
+  $("store").value = f.store;
+  $("category").value = f.category;
+  $("suggestions").style.display = "none";
+};
+
+window.addItem = async function(){
+  let n = $("productName").value.trim();
+  if(!n){ alert("Écris le produit."); return; }
+  let q = Number($("qty").value) || 1;
+  let p = parseMoney($("price").value);
+  let s = $("store").value;
+  let per = $("person").value;
+  let c = $("category").value;
+  items.push({id:Date.now(), name:n, qty:q, price:p, store:s, person:per, category:c, done:false});
+  let f = favs.find(x=>x.name.toLowerCase()===n.toLowerCase() && x.store===s);
+  if(f){ f.price=p; f.category=c; f.uses=(f.uses||0)+1; }
+  else { favs.push({id:Date.now()+1, name:n, store:s, category:c, price:p, uses:1}); }
+  $("productName").value = ""; $("qty").value = 1; $("price").value = "";
+  try { await writeCloud(); } catch(e){ alert("Erreur Firebase: "+e.message); }
+};
+
+window.quickAdd = async function(id){
+  const f = favs.find(x=>x.id===id);
+  if(!f) return;
+  f.uses=(f.uses||0)+1;
+  items.push({id:Date.now(), name:f.name, qty:1, price:Number(f.price)||0, store:f.store, person:"Famille", category:f.category, done:false});
+  await writeCloud();
+};
+
+window.editFav = function(id){
+  const f = favs.find(x=>x.id===id);
+  if(!f) return;
+  editingFavId = id;
+  $("editName").value = f.name;
+  $("editPrice").value = String(f.price).replace(".",",");
+  $("editStore").value = f.store;
+  $("editCategory").value = f.category;
+  $("editBox").style.display = "block";
+  $("editBox").scrollIntoView({behavior:"smooth"});
+};
+
+window.saveFavEdit = async function(){
+  let n=$("editName").value.trim(), p=parseMoney($("editPrice").value), s=$("editStore").value, c=$("editCategory").value;
+  favs = favs.map(f=>f.id===editingFavId ? {...f, name:n, price:p, store:s, category:c} : f);
+  editingFavId = null;
+  $("editBox").style.display = "none";
+  await writeCloud();
+};
+
+window.cancelFavEdit = function(){ editingFavId=null; $("editBox").style.display="none"; };
+window.deleteFav = async function(id){ favs=favs.filter(f=>f.id!==id); await writeCloud(); };
+window.toggle = async function(id){ items=items.map(i=>i.id===id ? {...i, done:!i.done} : i); await writeCloud(); };
+window.del = async function(id){ items=items.filter(i=>i.id!==id); await writeCloud(); };
+window.clearChecked = async function(){ items=items.filter(i=>!i.done); await writeCloud(); };
+window.restoreFavs = async function(){ if(confirm("Restaurer les produits fréquents ?")){ favs=makeFavs(); await writeCloud(); } };
+window.resetAll = async function(){ if(confirm("Tout effacer ?")){ items=[]; favs=makeFavs(); await writeCloud(); } };
+
+function render(){
+  $("favCount").textContent = favs.length;
+  $("quick").innerHTML = favs.map(f=>`<span class="favwrap"><button class="qbtn" onclick="quickAdd(${f.id})">+ ${f.name} <small>(${f.store}, ${money(f.price)})</small></button><button class="ebtn" onclick="editFav(${f.id})">Modifier</button><button class="xbtn" onclick="deleteFav(${f.id})">x</button></span>`).join("");
+
+  const active = items.filter(i=>!i.done);
+  const total = active.reduce((s,i)=>s+(Number(i.qty)||1)*(Number(i.price)||0),0);
+  const by = {};
+  active.forEach(i=>by[i.store]=(by[i.store]||0)+(Number(i.qty)||1)*(Number(i.price)||0));
+  $("stats").innerHTML = `<div class="stat"><strong>${active.length}</strong>Articles</div><div class="stat"><strong>${money(total)}</strong>Total estimé</div>` + stores.map(s=>`<div class="stat"><strong>${money(by[s]||0)}</strong>${s}</div>`).join("");
+
+  if(!items.length){
+    $("list").innerHTML = '<div class="empty">Aucun produit.</div>';
+  } else {
+    const grouped = {};
+    items.forEach(i=>(grouped[i.store]??=[]).push(i));
+    $("list").innerHTML = Object.keys(grouped).map(s=>`<h3>📍 ${s}</h3>` + grouped[s].map(i=>`<div class="item ${i.done?'done':''}"><input type="checkbox" ${i.done?'checked':''} onclick="toggle(${i.id})"><div><div class="main">${i.name} — Qté: ${i.qty} — <span class="price">${money((Number(i.qty)||1)*(Number(i.price)||0))}</span></div><div class="meta">${i.category} · ${i.person} · Prix: ${money(i.price)}</div></div><button class="danger" onclick="del(${i.id})">X</button></div>`).join("")).join("");
+  }
+
+  $("storeBtns").innerHTML = stores.map(s=>`<button class="${s===activeStore?'active':''}" onclick="activeStore='${s}';render()">${s}</button>`).join("");
+  const ps = favs.filter(f=>f.store===activeStore).sort((a,b)=>a.name.localeCompare(b.name));
+  $("storeProducts").innerHTML = `<h3>${activeStore} (${ps.length})</h3>` + ps.map(f=>`<div class="product"><div><b>${f.name}</b><div class="meta">${f.category} · ${money(f.price)}</div></div><div><button onclick="quickAdd(${f.id})">Ajouter</button> <button class="ebtn" onclick="showTab('fav');editFav(${f.id})">Modifier</button></div></div>`).join("");
+}
+render();
+</script>
+</body>
+</html>
