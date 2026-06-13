@@ -51,6 +51,11 @@ header{background:linear-gradient(135deg,#14b8a6,#3b82f6)!important;box-shadow:0
 #syncStatus{display:none!important}
 .note:empty{display:none!important}
 
+
+.badge{display:inline-block;color:white;border-radius:999px;padding:5px 10px;font-weight:bold;font-size:13px;margin-right:5px}
+.storeRow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border-bottom:1px solid rgba(0,0,0,.08);padding:10px 0}
+.storeSelectPlaceholder{color:#6b7280}
+
 </style>
 </head>
 <body>
@@ -82,6 +87,7 @@ header{background:linear-gradient(135deg,#14b8a6,#3b82f6)!important;box-shadow:0
 <div class="tabs">
 <button id="tabListBtn" class="active" onclick="showTab('list')">🛒 Liste</button>
 <button id="tabStoreBtn" onclick="showTab('store')">🏪 Par magasin</button>
+<button id="tabManageStoresBtn" onclick="showTab('manageStores')">🏷️ Magasins</button>
 <button id="tabFavBtn" onclick="showTab('fav')">⭐ Fréquents</button>
 <button id="tabToolsBtn" onclick="showTab('tools')">⚙️ Outils</button>
 </div>
@@ -93,7 +99,7 @@ header{background:linear-gradient(135deg,#14b8a6,#3b82f6)!important;box-shadow:0
 <input id="productName" class="name" placeholder="Amandes, œufs, kefir..." autocomplete="off">
 <input id="qty" class="small" type="number" min="1" value="1">
 <input id="price" class="small" inputmode="decimal" placeholder="Prix $">
-<select id="store"><option>Costco</option><option>Walmart</option><option>Superstore</option><option>No Frills</option><option>Autre</option></select>
+<select id="store"></select>
 <select id="person"><option>Famille</option><option>Edan</option><option>Otilia</option><option>Kayla</option></select>
 <select id="category"><option>Viandes / Protéines</option><option>Produits laitiers</option><option>Légumes</option><option>Fruits</option><option>Keto / Boulangerie</option><option>Collations</option><option>Boissons</option><option>Épicerie</option><option>Ménager</option></select>
 <button onclick="addItem()">Ajouter</button>
@@ -109,13 +115,34 @@ header{background:linear-gradient(135deg,#14b8a6,#3b82f6)!important;box-shadow:0
 <div class="card card-store"><h2>🏪 Produits par magasin</h2><div id="storeBtns" class="row storeBtns"></div><div id="storeProducts"></div></div>
 </section>
 
+
+<section id="panelManageStores" class="panel">
+<div class="card card-store">
+<h2>🏷️ Gestion des magasins</h2>
+<p class="note">Ajoute tes propres magasins. Les badges sont des couleurs simples, pas les vrais logos des marques.</p><p class="note">Base fréquente enrichie avec les prix des derniers reçus Costco et Superstore.</p>
+<div class="row">
+<input id="newStoreName" class="name" placeholder="Nom du magasin, ex: Save-On-Foods">
+<select id="newStoreColor">
+<option value="#ef4444">Rouge</option>
+<option value="#2563eb">Bleu</option>
+<option value="#f59e0b">Jaune/Orange</option>
+<option value="#16a34a">Vert</option>
+<option value="#7c3aed">Violet</option>
+<option value="#6b7280">Gris</option>
+</select>
+<button onclick="addStore()">Ajouter magasin</button>
+</div>
+<div id="storesManager"></div>
+</div>
+</section>
+
 <section id="panelFav" class="panel">
 <div id="editBox" class="card">
 <h2>Modifier un produit fréquent</h2>
 <div class="row">
 <input id="editName" class="name">
 <input id="editPrice" class="small" inputmode="decimal">
-<select id="editStore"><option>Costco</option><option>Walmart</option><option>Superstore</option><option>No Frills</option><option>Autre</option></select>
+<select id="editStore"></select>
 <select id="editCategory"><option>Viandes / Protéines</option><option>Produits laitiers</option><option>Légumes</option><option>Fruits</option><option>Keto / Boulangerie</option><option>Collations</option><option>Boissons</option><option>Épicerie</option><option>Ménager</option></select>
 <button class="warning" onclick="saveFavEdit()">Mettre à jour</button>
 <button class="secondary" onclick="cancelFavEdit()">Annuler</button>
@@ -155,18 +182,46 @@ const firebaseConfig = {
 };
 
 const $ = id => document.getElementById(id);
-const stores = ["Costco","Walmart","Superstore","No Frills","Autre"];
+let stores = ["Costco","Walmart","Superstore","No Frills","Autre"];
+let storeColors = {"Costco":"#ef4444","Walmart":"#2563eb","Superstore":"#f59e0b","No Frills":"#eab308","Autre":"#6b7280"};
 const base = [
-["Œufs","Costco","Viandes / Protéines",7.99],["Bacon","Costco","Viandes / Protéines",18.99],
-["Saumon fumé","Costco","Viandes / Protéines",19.99],["Magret de canard","Costco","Viandes / Protéines",24.99],
-["Ailes de poulet","Costco","Viandes / Protéines",22.99],["Cream cheese","Costco","Produits laitiers",8.99],
-["Fromage râpé","Costco","Produits laitiers",14.99],["Yogurt Kefir","Superstore","Produits laitiers",14.99],
-["Lait Kayla","Walmart","Produits laitiers",5.49],["Amandes","Costco","Collations",15.99],
-["Noix de cajou","Costco","Collations",16.99],["Épinards","Superstore","Légumes",4.49],
-["Brocolis","Superstore","Légumes",4.99],["Concombres","No Frills","Légumes",2.49],
-["Framboises","Superstore","Fruits",5.99],["Bleuets","Superstore","Fruits",5.99],
-["Pain keto","Walmart","Keto / Boulangerie",6.99],["Jus de mangue","Walmart","Boissons",4.99],
-["Splenda","Walmart","Épicerie",10.99],["Sacs poubelle 15 L","Costco","Ménager",12.99],
+["Amandes","Costco","Collations",11.99],
+["Épinards","Costco","Légumes",4.99],
+["Huile d’olive tunisienne","Costco","Épicerie",19.99],
+["Mequiar’s","Costco","Ménager",29.99],
+["Tomates","Costco","Légumes",6.99],
+["Growers Assorted","Costco","Boissons",14.99],
+["Aubergines","Costco","Légumes",6.49],
+["Brocolis","Costco","Légumes",6.99],
+["Asperges","Costco","Légumes",8.99],
+["Concombres","Costco","Légumes",2.99],
+["Pain Carbonaut","Costco","Keto / Boulangerie",11.99],
+["Champignons","Costco","Légumes",5.99],
+["Piments antillais","Costco","Légumes",0],
+["Crème fraîche","Costco","Produits laitiers",0],
+["Poulet thighs","Costco","Viandes / Protéines",0],
+["Pepperoni","Costco","Viandes / Protéines",0],
+["Lait d’amande","Costco","Boissons",0],
+
+["Jus de mangue","Superstore","Boissons",3.33],
+["Romaine Heart","Superstore","Légumes",7.00],
+["Zucchini","Superstore","Légumes",5.60],
+
+["Œufs","Costco","Viandes / Protéines",7.99],
+["Bacon","Costco","Viandes / Protéines",18.99],
+["Saumon fumé","Costco","Viandes / Protéines",19.99],
+["Magret de canard","Costco","Viandes / Protéines",24.99],
+["Ailes de poulet","Costco","Viandes / Protéines",22.99],
+["Cream cheese","Costco","Produits laitiers",8.99],
+["Fromage râpé","Costco","Produits laitiers",14.99],
+["Yogurt Kefir","Superstore","Produits laitiers",14.99],
+["Lait Kayla","Walmart","Produits laitiers",5.49],
+["Noix de cajou","Costco","Collations",16.99],
+["Framboises","Superstore","Fruits",5.99],
+["Bleuets","Superstore","Fruits",5.99],
+["Pain keto","Walmart","Keto / Boulangerie",6.99],
+["Splenda","Walmart","Épicerie",10.99],
+["Sacs poubelle 15 L","Costco","Ménager",12.99],
 ["Essuie-tout","Costco","Ménager",24.99]
 ];
 
@@ -187,6 +242,25 @@ const db = getDatabase(app);
 function parseMoney(v){ return Number(String(v||"0").replace(",",".")) || 0; }
 function money(n){ return "$" + (Number(n)||0).toFixed(2); }
 function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function badge(store){
+  const color = storeColors[store] || "#6b7280";
+  return `<span class="badge" style="background:${color}">${store || "Sans magasin"}</span>`;
+}
+function renderStoreOptions(){
+  const addSel = $("store");
+  const editSel = $("editStore");
+  if(addSel){
+    const current = addSel.value;
+    addSel.innerHTML = `<option value="">-- choisir magasin --</option>` + stores.map(s=>`<option value="${s}">${s}</option>`).join("");
+    if(stores.includes(current)) addSel.value = current;
+  }
+  if(editSel){
+    const currentE = editSel.value;
+    editSel.innerHTML = stores.map(s=>`<option value="${s}">${s}</option>`).join("");
+    if(stores.includes(currentE)) editSel.value = currentE;
+  }
+}
+
 
 window.login = async function(){
   $("loginMsg").textContent = "Connexion...";
@@ -226,11 +300,13 @@ function startSync(){
     if(data){
       items = Array.isArray(data.items) ? data.items : [];
       favs = Array.isArray(data.favs) ? data.favs : makeFavs();
+      stores = Array.isArray(data.stores) ? data.stores : stores;
+      storeColors = data.storeColors || storeColors;
       $("syncStatus").textContent = "✅ Synchronisation protégée active";
     } else {
       items = JSON.parse(localStorage.getItem("cf_items_v43") || "[]");
       favs = JSON.parse(localStorage.getItem("cf_favs_v43") || "null") || makeFavs();
-      set(dataRef, { items, favs, updatedAt: new Date().toISOString(), version: "4.4-family-design" });
+      set(dataRef, { items, favs, stores, storeColors, updatedAt: new Date().toISOString(), version: "4.5.1-store-management-data" });
       $("syncStatus").textContent = "✅ Base protégée créée";
     }
     saveLocal();
@@ -249,12 +325,12 @@ function saveLocal(){
 async function writeCloud(){
   if(applyingRemote || !dataRef) return;
   saveLocal();
-  await set(dataRef, {items, favs, updatedAt: new Date().toISOString(), version:"4.4-family-design"});
+  await set(dataRef, {items, favs, stores, storeColors, updatedAt: new Date().toISOString(), version:"4.5.1-store-management-data"});
   render();
 }
 
 window.showTab = function(t){
-  ["list","store","fav","tools"].forEach(x=>{
+  ["list","store","manageStores","fav","tools"].forEach(x=>{
     $("panel"+cap(x)).classList.remove("active");
     $("tab"+cap(x)+"Btn").classList.remove("active");
   });
@@ -287,6 +363,7 @@ window.addItem = async function(){
   let q = Number($("qty").value) || 1;
   let p = parseMoney($("price").value);
   let s = $("store").value;
+  if(!s){ alert("Choisis un magasin."); return; }
   let per = $("person").value;
   let c = $("category").value;
   items.push({id:Date.now(), name:n, qty:q, price:p, store:s, person:per, category:c, done:false});
@@ -333,7 +410,37 @@ window.clearChecked = async function(){ items=items.filter(i=>!i.done); await wr
 window.restoreFavs = async function(){ if(confirm("Restaurer les produits fréquents ?")){ favs=makeFavs(); await writeCloud(); } };
 window.resetAll = async function(){ if(confirm("Tout effacer ?")){ items=[]; favs=makeFavs(); await writeCloud(); } };
 
+
+window.addStore = async function(){
+  const name = $("newStoreName").value.trim();
+  const color = $("newStoreColor").value;
+  if(!name){ alert("Écris le nom du magasin."); return; }
+  if(stores.some(s=>s.toLowerCase()===name.toLowerCase())){ alert("Ce magasin existe déjà."); return; }
+  stores.push(name);
+  storeColors[name] = color;
+  $("newStoreName").value = "";
+  renderStoreOptions();
+  await writeCloud();
+};
+
+window.deleteStore = async function(name){
+  const used = items.some(i=>i.store===name) || favs.some(f=>f.store===name);
+  if(used){ alert("Ce magasin est utilisé par des produits. Supprime ou modifie d'abord ces produits."); return; }
+  if(!confirm("Supprimer ce magasin ?")) return;
+  stores = stores.filter(s=>s!==name);
+  delete storeColors[name];
+  if(activeStore===name) activeStore = stores[0] || "";
+  renderStoreOptions();
+  await writeCloud();
+};
+
+window.changeStoreColor = async function(name, color){
+  storeColors[name] = color;
+  await writeCloud();
+};
+
 function render(){
+  renderStoreOptions();
   $("favCount").textContent = favs.length;
   $("quick").innerHTML = favs.map(f=>`<span class="favwrap"><button class="qbtn" onclick="quickAdd(${f.id})">+ ${f.name} <small>(${f.store}, ${money(f.price)})</small></button><button class="ebtn" onclick="editFav(${f.id})">Modifier</button><button class="xbtn" onclick="deleteFav(${f.id})">x</button></span>`).join("");
 
@@ -348,12 +455,19 @@ function render(){
   } else {
     const grouped = {};
     items.forEach(i=>(grouped[i.store]??=[]).push(i));
-    $("list").innerHTML = Object.keys(grouped).map(s=>`<h3>📍 ${s}</h3>` + grouped[s].map(i=>`<div class="item ${i.done?'done':''}"><input type="checkbox" ${i.done?'checked':''} onclick="toggle(${i.id})"><div><div class="main">${i.name} — Qté: ${i.qty} — <span class="price">${money((Number(i.qty)||1)*(Number(i.price)||0))}</span></div><div class="meta">${i.category} · ${i.person} · Prix: ${money(i.price)}</div></div><button class="danger" onclick="del(${i.id})">X</button></div>`).join("")).join("");
+    $("list").innerHTML = Object.keys(grouped).map(s=>`<h3>${badge(s)}</h3>` + grouped[s].map(i=>`<div class="item ${i.done?'done':''}"><input type="checkbox" ${i.done?'checked':''} onclick="toggle(${i.id})"><div><div class="main">${i.name} — Qté: ${i.qty} — <span class="price">${money((Number(i.qty)||1)*(Number(i.price)||0))}</span></div><div class="meta">${i.category} · ${i.person} · Prix: ${money(i.price)}</div></div><button class="danger" onclick="del(${i.id})">X</button></div>`).join("")).join("");
   }
 
-  $("storeBtns").innerHTML = stores.map(s=>`<button class="${s===activeStore?'active':''}" onclick="selectStore('${s}')">${s}</button>`).join("");
+  $("storeBtns").innerHTML = stores.map(s=>`<button class="${s===activeStore?'active':''}" onclick="selectStore('${s}')">${badge(s)}</button>`).join("");
   const ps = favs.filter(f=>f.store===activeStore).sort((a,b)=>a.name.localeCompare(b.name));
-  $("storeProducts").innerHTML = `<h3>${activeStore} (${ps.length})</h3>` + ps.map(f=>`<div class="product"><div><b>${f.name}</b><div class="meta">${f.category} · ${money(f.price)}</div></div><div><button onclick="quickAdd(${f.id})">Ajouter</button> <button class="ebtn" onclick="showTab('fav');editFav(${f.id})">Modifier</button></div></div>`).join("");
+  $("storeProducts").innerHTML = `<h3>${badge(activeStore)} (${ps.length})</h3>` + ps.map(f=>`<div class="product"><div><b>${f.name}</b><div class="meta">${f.category} · ${money(f.price)}</div></div><div><button onclick="quickAdd(${f.id})">Ajouter</button> <button class="ebtn" onclick="showTab('fav');editFav(${f.id})">Modifier</button></div></div>`).join("");
+
+  const sm = $("storesManager");
+  if(sm){
+    sm.innerHTML = stores.map(s=>`<div class="storeRow"><div>${badge(s)} <span class="meta">${favs.filter(f=>f.store===s).length} produits fréquents</span></div><div><select onchange="changeStoreColor('${s}', this.value)"><option value="#ef4444">Rouge</option><option value="#2563eb">Bleu</option><option value="#f59e0b">Jaune/Orange</option><option value="#16a34a">Vert</option><option value="#7c3aed">Violet</option><option value="#6b7280">Gris</option></select> <button class="xbtn" onclick="deleteStore('${s}')">Supprimer</button></div></div>`).join("");
+    stores.forEach((s, idx)=>{ const selects = sm.querySelectorAll("select"); if(selects[idx]) selects[idx].value = storeColors[s] || "#6b7280"; });
+  }
+
 }
 render();
 </script>
