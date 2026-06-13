@@ -3,15 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Courses Famille.1 Login Famille</title>
+<title>Courses Famille V4.6</title>
 <style>
-body{margin:0;font-family:Arial;background:#f6f7fb;color:#172033}
-header{background:linear-gradient(135deg,#16a34a,#2563eb);color:white;padding:18px;border-radius:0 0 22px 22px}
-h1{margin:0;font-size:24px}header p{margin:6px 0 0}
-main{max-width:950px;margin:auto;padding:12px}
-.card{background:white;border-radius:16px;padding:14px;margin:12px 0;box-shadow:0 4px 14px #0001}
-.tabs{display:flex;gap:8px;overflow:auto;position:sticky;top:0;background:#f6f7fb;padding:8px 0;z-index:5}
-.tabs button{background:#eef2ff;color:#1e3a8a;border:1px solid #dbeafe;white-space:nowrap}
+body{margin:0;font-family:Arial,sans-serif;background:#fff7ed;color:#172033}
+header{background:linear-gradient(135deg,#14b8a6,#3b82f6);color:white;padding:18px;border-radius:0 0 28px 28px;box-shadow:0 8px 22px rgba(20,184,166,.22)}
+h1{margin:0;font-size:26px} header p{margin:6px 0 0}
+main{max-width:1000px;margin:auto;padding:12px}
+.card{border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 24px rgba(31,41,55,.08);border:1px solid rgba(255,255,255,.65)}
+.card-search{background:#bfdbfe}.card-summary{background:#bbf7d0}.card-list{background:#e9d5ff}.card-fav{background:#fde68a}.card-store{background:#fed7aa}.card-tools{background:#e0e7ff}.card-types{background:#ccfbf1}
+.tabs{display:flex;gap:8px;overflow:auto;position:sticky;top:0;background:#fff7ed;padding:8px 0;z-index:5}
+.tabs button{background:#fff;color:#1e3a8a;border:1px solid #dbeafe;white-space:nowrap}
 .tabs button.active{background:#2563eb;color:white}
 .row{display:flex;gap:8px;flex-wrap:wrap}
 input,select,button{font-size:16px;border-radius:12px;border:1px solid #e5e7eb;padding:11px}
@@ -20,42 +21,26 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 .panel{display:none}.panel.active{display:block}
 .secondary{background:#eef2ff;color:#1e3a8a;border:1px solid #dbeafe}.danger{background:#ef4444}.warning{background:#f59e0b}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
-.stat{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:11px}.stat strong{font-size:21px;display:block}
-.item,.product{display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:center;border-bottom:1px solid #eee;padding:9px 0}
+.stat{background:rgba(255,255,255,.72);border:1px solid #e5e7eb;border-radius:12px;padding:11px}.stat strong{font-size:21px;display:block}
+.item,.product{display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:center;border-bottom:1px solid rgba(0,0,0,.08);padding:9px 0}
 .product{grid-template-columns:1fr auto}.done .main{text-decoration:line-through;color:#6b7280}
 .meta,.note{color:#6b7280;font-size:14px;line-height:1.35}.price{font-weight:bold}
 .suggestions{display:none;border:1px solid #ddd;border-radius:12px;background:white;max-height:220px;overflow:auto;margin-top:6px}
 .suggestions div{padding:10px;border-bottom:1px solid #eee;cursor:pointer}
 .q{display:flex;gap:6px;flex-wrap:wrap}.q button{margin:3px}
 .qbtn{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0}.ebtn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}.xbtn{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
-#editBox{display:none;background:#fff7ed}.storeBtns button{background:#eef2ff;color:#1e3a8a}.storeBtns button.active{background:#2563eb;color:white}
+#editBox{display:none;background:#fff7ed}
 #appArea{display:none}
 .familyLogin{display:grid;gap:12px;max-width:460px}
 .familyBadge{background:#eef2ff;color:#1e3a8a;border:1px solid #dbeafe;border-radius:16px;padding:14px;font-weight:bold;font-size:20px;text-align:center}
 #loginPassword{width:100%;box-sizing:border-box}
-
-body{background:#fff7ed!important;}
-header{background:linear-gradient(135deg,#14b8a6,#3b82f6)!important;box-shadow:0 8px 22px rgba(20,184,166,.22)}
-.card{border:1px solid rgba(255,255,255,.65)!important;box-shadow:0 8px 24px rgba(31,41,55,.08)!important}
-.card-search{background:#bfdbfe!important}
-.card-summary{background:#bbf7d0!important}
-.card-list{background:#e9d5ff!important}
-.card-fav{background:#fde68a!important}
-.card-store{background:#fed7aa!important}
-.card-tools{background:#e0e7ff!important}
-.card h2{color:#172033!important}
-.stat{background:rgba(255,255,255,.72)!important}
-.tabs{background:#fff7ed!important}
-.tabs button{background:#ffffff!important;color:#1e3a8a!important;border:1px solid #dbeafe!important}
-.tabs button.active{background:#2563eb!important;color:white!important}
-#syncStatus{display:none!important}
-.note:empty{display:none!important}
-
-
-.badge{display:inline-block;color:white;border-radius:999px;padding:5px 10px;font-weight:bold;font-size:13px;margin-right:5px}
+.badge{display:inline-block;border-radius:999px;padding:5px 10px;font-weight:bold;font-size:13px;margin-right:5px}
 .storeRow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border-bottom:1px solid rgba(0,0,0,.08);padding:10px 0}
-.storeSelectPlaceholder{color:#6b7280}
-
+.categoryBtns{display:flex;gap:8px;flex-wrap:wrap}
+.categoryBtns button{background:#fff;color:#172033;border:1px solid #e5e7eb}
+.categoryBtns button.active{background:#2563eb;color:#fff}
+.categoryTitle{display:flex;align-items:center;gap:8px;font-size:22px}
+.colorInput{width:56px;height:44px;padding:2px}
 </style>
 </head>
 <body>
@@ -69,7 +54,7 @@ header{background:linear-gradient(135deg,#14b8a6,#3b82f6)!important;box-shadow:0
 <h2>Connexion familiale</h2>
 <div class="familyLogin">
 <div class="familyBadge">👨‍👩‍👧 Famille Edan</div>
-<p class="note">Entrez seulement le mot de passe familial. L’adresse e-mail Firebase est utilisée automatiquement en arrière-plan.</p>
+<p class="note">Entrez seulement le mot de passe familial.</p>
 <input id="loginPassword" type="password" placeholder="Mot de passe familial">
 <button onclick="login()">Se connecter</button>
 <p id="loginMsg" class="note"></p>
@@ -79,7 +64,7 @@ header{background:linear-gradient(135deg,#14b8a6,#3b82f6)!important;box-shadow:0
 <section id="appArea">
 <div class="card">
 <div class="row">
-<strong id="userInfo">Connecté : Famille</strong>
+<strong id="userInfo">Connecté : Famille Edan</strong>
 <button class="danger" onclick="logout()">Déconnexion</button>
 </div>
 </div>
@@ -87,6 +72,7 @@ header{background:linear-gradient(135deg,#14b8a6,#3b82f6)!important;box-shadow:0
 <div class="tabs">
 <button id="tabListBtn" class="active" onclick="showTab('list')">🛒 Liste</button>
 <button id="tabStoreBtn" onclick="showTab('store')">🏪 Par magasin</button>
+<button id="tabTypesBtn" onclick="showTab('types')">📂 Types</button>
 <button id="tabManageStoresBtn" onclick="showTab('manageStores')">🏷️ Magasins</button>
 <button id="tabFavBtn" onclick="showTab('fav')">⭐ Fréquents</button>
 <button id="tabToolsBtn" onclick="showTab('tools')">⚙️ Outils</button>
@@ -101,35 +87,35 @@ header{background:linear-gradient(135deg,#14b8a6,#3b82f6)!important;box-shadow:0
 <input id="price" class="small" inputmode="decimal" placeholder="Prix $">
 <select id="store"></select>
 <select id="person"><option>Famille</option><option>Edan</option><option>Otilia</option><option>Kayla</option></select>
-<select id="category"><option>Viandes / Protéines</option><option>Produits laitiers</option><option>Légumes</option><option>Fruits</option><option>Keto / Boulangerie</option><option>Collations</option><option>Boissons</option><option>Épicerie</option><option>Ménager</option></select>
+<select id="category"></select>
 <button onclick="addItem()">Ajouter</button>
 </div>
 <div id="suggestions" class="suggestions"></div>
-
 </div>
 <div class="card card-summary"><h2>📊 Résumé</h2><div id="stats" class="stats"></div></div>
 <div class="card card-list"><h2>📝 Liste</h2><div id="list"></div></div>
 </section>
 
 <section id="panelStore" class="panel">
-<div class="card card-store"><h2>🏪 Produits par magasin</h2><div id="storeBtns" class="row storeBtns"></div><div id="storeProducts"></div></div>
+<div class="card card-store"><h2>🏪 Produits par magasin</h2><div id="storeBtns" class="row"></div><div id="storeProducts"></div></div>
 </section>
 
+<section id="panelTypes" class="panel">
+<div class="card card-types">
+<h2>📂 Types de produits</h2>
+<div id="categoryBtns" class="categoryBtns"></div>
+<div id="categoryProducts"></div>
+</div>
+</section>
 
 <section id="panelManageStores" class="panel">
 <div class="card card-store">
 <h2>🏷️ Gestion des magasins</h2>
-<p class="note">Ajoute tes propres magasins. Les badges sont des couleurs simples, pas les vrais logos des marques.</p><p class="note">Base fréquente enrichie avec les prix des derniers reçus Costco et Superstore.</p>
+<p class="note">Ajoute tes magasins et choisis deux couleurs : fond du badge et couleur de l’écriture.</p>
 <div class="row">
 <input id="newStoreName" class="name" placeholder="Nom du magasin, ex: Save-On-Foods">
-<select id="newStoreColor">
-<option value="#ef4444">Rouge</option>
-<option value="#2563eb">Bleu</option>
-<option value="#f59e0b">Jaune/Orange</option>
-<option value="#16a34a">Vert</option>
-<option value="#7c3aed">Violet</option>
-<option value="#6b7280">Gris</option>
-</select>
+<label class="note">Fond <input id="newStoreBg" class="colorInput" type="color" value="#16a34a"></label>
+<label class="note">Texte <input id="newStoreText" class="colorInput" type="color" value="#ffffff"></label>
 <button onclick="addStore()">Ajouter magasin</button>
 </div>
 <div id="storesManager"></div>
@@ -143,21 +129,22 @@ header{background:linear-gradient(135deg,#14b8a6,#3b82f6)!important;box-shadow:0
 <input id="editName" class="name">
 <input id="editPrice" class="small" inputmode="decimal">
 <select id="editStore"></select>
-<select id="editCategory"><option>Viandes / Protéines</option><option>Produits laitiers</option><option>Légumes</option><option>Fruits</option><option>Keto / Boulangerie</option><option>Collations</option><option>Boissons</option><option>Épicerie</option><option>Ménager</option></select>
+<select id="editCategory"></select>
 <button class="warning" onclick="saveFavEdit()">Mettre à jour</button>
 <button class="secondary" onclick="cancelFavEdit()">Annuler</button>
 </div>
 </div>
-<div class="card card-fav"><h2>⭐ Produits fréquents</h2><details><summary>Ouvrir / fermer (<span id="favCount"></span>)</summary><div id="quick" class="q"></div></details></div>
+<div class="card card-fav"><h2>⭐ Produits fréquents</h2><details open><summary>Ouvrir / fermer (<span id="favCount"></span>)</summary><div id="quick" class="q"></div></details></div>
 </section>
 
 <section id="panelTools" class="panel">
-<div class="card">
-<h2>Outils</h2>
+<div class="card card-tools">
+<h2>⚙️ Outils</h2>
 <button class="danger" onclick="clearChecked()">Supprimer cochés</button>
-<button class="secondary" onclick="restoreFavs()">Restaurer fréquents</button>
+<button class="secondary" onclick="cleanBadFavs()">Nettoyer produits vides / erreurs</button>
+<button class="secondary" onclick="restoreFavs()">Restaurer fréquents de départ</button>
 <button class="secondary" onclick="resetAll()">Réinitialiser</button>
-<p class="note">Cette version garde un seul accès familial simple. Les règles Firebase restent : auth != null.</p>
+<p class="note">V4.6 : Types de produits + badges magasins avec couleur de fond et couleur d’écriture.</p>
 </div>
 </section>
 </section>
@@ -182,55 +169,54 @@ const firebaseConfig = {
 };
 
 const $ = id => document.getElementById(id);
-let stores = ["Costco","Walmart","Superstore","No Frills","Autre"];
-let storeColors = {"Costco":"#ef4444","Walmart":"#2563eb","Superstore":"#f59e0b","No Frills":"#eab308","Autre":"#6b7280"};
-const base = [
-["Amandes","Costco","Collations",11.99],
-["Épinards","Costco","Légumes",4.99],
-["Huile d’olive tunisienne","Costco","Épicerie",19.99],
-["Mequiar’s","Costco","Ménager",29.99],
-["Tomates","Costco","Légumes",6.99],
-["Growers Assorted","Costco","Boissons",14.99],
-["Aubergines","Costco","Légumes",6.49],
-["Brocolis","Costco","Légumes",6.99],
-["Asperges","Costco","Légumes",8.99],
-["Concombres","Costco","Légumes",2.99],
-["Pain Carbonaut","Costco","Keto / Boulangerie",11.99],
-["Champignons","Costco","Légumes",5.99],
-["Piments antillais","Costco","Légumes",0],
-["Crème fraîche","Costco","Produits laitiers",0],
-["Poulet thighs","Costco","Viandes / Protéines",0],
-["Pepperoni","Costco","Viandes / Protéines",0],
-["Lait d’amande","Costco","Boissons",0],
-
-["Jus de mangue","Superstore","Boissons",3.33],
-["Romaine Heart","Superstore","Légumes",7.00],
-["Zucchini","Superstore","Légumes",5.60],
-
-["Œufs","Costco","Viandes / Protéines",7.99],
-["Bacon","Costco","Viandes / Protéines",18.99],
-["Saumon fumé","Costco","Viandes / Protéines",19.99],
-["Magret de canard","Costco","Viandes / Protéines",24.99],
-["Ailes de poulet","Costco","Viandes / Protéines",22.99],
-["Cream cheese","Costco","Produits laitiers",8.99],
-["Fromage râpé","Costco","Produits laitiers",14.99],
-["Yogurt Kefir","Superstore","Produits laitiers",14.99],
-["Lait Kayla","Walmart","Produits laitiers",5.49],
-["Noix de cajou","Costco","Collations",16.99],
-["Framboises","Superstore","Fruits",5.99],
-["Bleuets","Superstore","Fruits",5.99],
-["Pain keto","Walmart","Keto / Boulangerie",6.99],
-["Splenda","Walmart","Épicerie",10.99],
-["Sacs poubelle 15 L","Costco","Ménager",12.99],
-["Essuie-tout","Costco","Ménager",24.99]
+const categories = [
+  {name:"Viandes / Protéines", icon:"🥩"},
+  {name:"Produits laitiers", icon:"🥛"},
+  {name:"Légumes", icon:"🥦"},
+  {name:"Fruits", icon:"🍎"},
+  {name:"Keto / Boulangerie", icon:"🍞"},
+  {name:"Collations", icon:"🥜"},
+  {name:"Boissons", icon:"🥤"},
+  {name:"Épicerie", icon:"🛒"},
+  {name:"Ménager", icon:"🧽"}
 ];
 
-function makeFavs(){ return base.map((x,i)=>({id: Date.now()+i, name:x[0], store:x[1], category:x[2], price:x[3], uses:0})); }
+let stores = ["Costco","Walmart","Superstore","No Frills","Autre"];
+let storeStyles = {
+  "Costco":{bg:"#b91c1c",text:"#ffffff"},
+  "Walmart":{bg:"#2563eb",text:"#facc15"},
+  "Superstore":{bg:"#f59e0b",text:"#ffffff"},
+  "No Frills":{bg:"#eab308",text:"#b91c1c"},
+  "Autre":{bg:"#6b7280",text:"#ffffff"}
+};
+
+const base = [
+["Amandes","Costco","Collations",11.99],["Épinards","Costco","Légumes",4.99],
+["Huile d’olive tunisienne","Costco","Épicerie",19.99],["Mequiar’s","Costco","Ménager",29.99],
+["Tomates","Costco","Légumes",6.99],["Growers Assorted","Costco","Boissons",14.99],
+["Aubergines","Costco","Légumes",6.49],["Brocolis","Costco","Légumes",6.99],
+["Asperges","Costco","Légumes",8.99],["Concombres","Costco","Légumes",2.99],
+["Pain Carbonaut","Costco","Keto / Boulangerie",11.99],["Champignons","Costco","Légumes",5.99],
+["Piments antillais","Costco","Légumes",0],["Crème fraîche","Costco","Produits laitiers",0],
+["Poulet thighs","Costco","Viandes / Protéines",0],["Pepperoni","Costco","Viandes / Protéines",0],
+["Lait d’amande","Costco","Boissons",0],["Jus de mangue","Superstore","Boissons",3.33],
+["Romaine Heart","Superstore","Légumes",7.00],["Zucchini","Superstore","Légumes",5.60],
+["Œufs","Costco","Viandes / Protéines",7.99],["Bacon","Costco","Viandes / Protéines",18.99],
+["Saumon fumé","Costco","Viandes / Protéines",19.99],["Magret de canard","Costco","Viandes / Protéines",24.99],
+["Ailes de poulet","Costco","Viandes / Protéines",22.99],["Cream cheese","Costco","Produits laitiers",8.99],
+["Fromage râpé","Costco","Produits laitiers",14.99],["Yogurt Kefir","Superstore","Produits laitiers",14.99],
+["Lait Kayla","Walmart","Produits laitiers",5.49],["Noix de cajou","Costco","Collations",16.99],
+["Framboises","Superstore","Fruits",5.99],["Bleuets","Superstore","Fruits",5.99],
+["Pain keto","Walmart","Keto / Boulangerie",6.99],["Splenda","Walmart","Épicerie",10.99],
+["Sacs poubelle 15 L","Costco","Ménager",12.99],["Essuie-tout","Costco","Ménager",24.99]
+];
+
+function makeFavs(){ return base.map((x,i)=>({id:Date.now()+i,name:x[0],store:x[1],category:x[2],price:x[3],uses:0})); }
 
 let items = [];
 let favs = makeFavs();
 let activeStore = "Costco";
-window.selectStore = function(storeName){ activeStore = storeName; render(); };
+let activeCategory = "Viandes / Protéines";
 let editingFavId = null;
 let applyingRemote = false;
 let dataRef = null;
@@ -242,11 +228,19 @@ const db = getDatabase(app);
 function parseMoney(v){ return Number(String(v||"0").replace(",",".")) || 0; }
 function money(n){ return "$" + (Number(n)||0).toFixed(2); }
 function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function catIcon(name){ return (categories.find(c=>c.name===name)||{}).icon || "📦"; }
 function badge(store){
-  const color = storeColors[store] || "#6b7280";
-  return `<span class="badge" style="background:${color}">${store || "Sans magasin"}</span>`;
+  const st = storeStyles[store] || {bg:"#6b7280",text:"#ffffff"};
+  return `<span class="badge" style="background:${st.bg};color:${st.text}">${store || "Sans magasin"}</span>`;
+}
+function normalizeStoreStyles(){
+  stores.forEach(s=>{
+    if(!storeStyles[s]) storeStyles[s] = {bg:"#6b7280",text:"#ffffff"};
+    if(typeof storeStyles[s] === "string") storeStyles[s] = {bg:storeStyles[s],text:"#ffffff"};
+  });
 }
 function renderStoreOptions(){
+  normalizeStoreStyles();
   const addSel = $("store");
   const editSel = $("editStore");
   if(addSel){
@@ -260,7 +254,25 @@ function renderStoreOptions(){
     if(stores.includes(currentE)) editSel.value = currentE;
   }
 }
-
+function renderCategoryOptions(){
+  const addSel = $("category");
+  const editSel = $("editCategory");
+  const html = categories.map(c=>`<option value="${c.name}">${c.icon} ${c.name}</option>`).join("");
+  if(addSel){ const cur=addSel.value; addSel.innerHTML=html; if(categories.some(c=>c.name===cur)) addSel.value=cur; }
+  if(editSel){ const cur=editSel.value; editSel.innerHTML=html; if(categories.some(c=>c.name===cur)) editSel.value=cur; }
+}
+function saveLocal(){
+  localStorage.setItem("cf_items_v46", JSON.stringify(items));
+  localStorage.setItem("cf_favs_v46", JSON.stringify(favs));
+  localStorage.setItem("cf_stores_v46", JSON.stringify(stores));
+  localStorage.setItem("cf_storeStyles_v46", JSON.stringify(storeStyles));
+}
+async function writeCloud(){
+  if(applyingRemote || !dataRef) return;
+  saveLocal();
+  await set(dataRef, {items, favs, stores, storeStyles, updatedAt:new Date().toISOString(), version:"4.6-types-stores"});
+  render();
+}
 
 window.login = async function(){
   $("loginMsg").textContent = "Connexion...";
@@ -271,9 +283,7 @@ window.login = async function(){
     $("loginMsg").textContent = "Mot de passe incorrect ou connexion impossible.";
   }
 };
-
 $("loginPassword").addEventListener("keydown", e=>{ if(e.key==="Enter") window.login(); });
-
 window.logout = async function(){ await signOut(auth); };
 
 onAuthStateChanged(auth, (user)=>{
@@ -281,14 +291,12 @@ onAuthStateChanged(auth, (user)=>{
     $("loginArea").style.display = "none";
     $("appArea").style.display = "block";
     $("userInfo").textContent = "Connecté : Famille Edan";
-    $("syncStatus").textContent = "✅ Connecté, synchronisation en cours...";
     startSync();
   } else {
     if(dataRef) off(dataRef);
     dataRef = null;
     $("loginArea").style.display = "block";
     $("appArea").style.display = "none";
-    $("syncStatus").textContent = "Connexion familiale requise";
   }
 });
 
@@ -301,36 +309,29 @@ function startSync(){
       items = Array.isArray(data.items) ? data.items : [];
       favs = Array.isArray(data.favs) ? data.favs : makeFavs();
       stores = Array.isArray(data.stores) ? data.stores : stores;
-      storeColors = data.storeColors || storeColors;
-      $("syncStatus").textContent = "✅ Synchronisation protégée active";
+      if(data.storeStyles) storeStyles = data.storeStyles;
+      else if(data.storeColors){
+        storeStyles = {};
+        Object.keys(data.storeColors).forEach(k=>storeStyles[k]={bg:data.storeColors[k],text:"#ffffff"});
+      }
     } else {
-      items = JSON.parse(localStorage.getItem("cf_items_v43") || "[]");
-      favs = JSON.parse(localStorage.getItem("cf_favs_v43") || "null") || makeFavs();
-      set(dataRef, { items, favs, stores, storeColors, updatedAt: new Date().toISOString(), version: "4.5.1-store-management-data" });
-      $("syncStatus").textContent = "✅ Base protégée créée";
+      items = JSON.parse(localStorage.getItem("cf_items_v46") || "[]");
+      favs = JSON.parse(localStorage.getItem("cf_favs_v46") || "null") || makeFavs();
+      stores = JSON.parse(localStorage.getItem("cf_stores_v46") || "null") || stores;
+      storeStyles = JSON.parse(localStorage.getItem("cf_storeStyles_v46") || "null") || storeStyles;
+      set(dataRef, {items, favs, stores, storeStyles, updatedAt:new Date().toISOString(), version:"4.6-types-stores"});
     }
+    normalizeStoreStyles();
     saveLocal();
     render();
     applyingRemote = false;
   }, (error)=>{
-    $("syncStatus").textContent = "❌ Erreur Firebase : " + error.message;
+    $("syncStatus").textContent = "Erreur Firebase : " + error.message;
   });
 }
 
-function saveLocal(){
-  localStorage.setItem("cf_items_v43", JSON.stringify(items));
-  localStorage.setItem("cf_favs_v43", JSON.stringify(favs));
-}
-
-async function writeCloud(){
-  if(applyingRemote || !dataRef) return;
-  saveLocal();
-  await set(dataRef, {items, favs, stores, storeColors, updatedAt: new Date().toISOString(), version:"4.5.1-store-management-data"});
-  render();
-}
-
 window.showTab = function(t){
-  ["list","store","manageStores","fav","tools"].forEach(x=>{
+  ["list","store","types","manageStores","fav","tools"].forEach(x=>{
     $("panel"+cap(x)).classList.remove("active");
     $("tab"+cap(x)+"Btn").classList.remove("active");
   });
@@ -338,12 +339,14 @@ window.showTab = function(t){
   $("tab"+cap(t)+"Btn").classList.add("active");
   render();
 };
+window.selectStore = function(storeName){ activeStore = storeName; render(); };
+window.selectCategory = function(categoryName){ activeCategory = categoryName; render(); };
 
 $("productName").addEventListener("input", ()=>{
   const q = $("productName").value.toLowerCase().trim();
   if(!q){ $("suggestions").style.display="none"; return; }
-  const hits = favs.filter(f=>f.name.toLowerCase().includes(q)).slice(0,12);
-  $("suggestions").innerHTML = hits.map(f=>`<div onclick="selectProduct(${f.id})"><b>${f.name}</b><br><small>${f.category} · ${f.store} · ${money(f.price)}</small></div>`).join("");
+  const hits = favs.filter(f=>(f.name||"").toLowerCase().includes(q)).slice(0,12);
+  $("suggestions").innerHTML = hits.map(f=>`<div onclick="selectProduct(${f.id})"><b>${f.name}</b><br><small>${catIcon(f.category)} ${f.category} · ${f.store} · ${money(f.price)}</small></div>`).join("");
   $("suggestions").style.display = hits.length ? "block" : "none";
 });
 
@@ -367,18 +370,18 @@ window.addItem = async function(){
   let per = $("person").value;
   let c = $("category").value;
   items.push({id:Date.now(), name:n, qty:q, price:p, store:s, person:per, category:c, done:false});
-  let f = favs.find(x=>x.name.toLowerCase()===n.toLowerCase() && x.store===s);
+  let f = favs.find(x=>(x.name||"").toLowerCase()===n.toLowerCase() && x.store===s);
   if(f){ f.price=p; f.category=c; f.uses=(f.uses||0)+1; }
   else { favs.push({id:Date.now()+1, name:n, store:s, category:c, price:p, uses:1}); }
-  $("productName").value = ""; $("qty").value = 1; $("price").value = "";
-  try { await writeCloud(); } catch(e){ alert("Erreur Firebase: "+e.message); }
+  $("productName").value = ""; $("qty").value = 1; $("price").value = ""; $("store").value="";
+  await writeCloud();
 };
 
 window.quickAdd = async function(id){
   const f = favs.find(x=>x.id===id);
-  if(!f) return;
-  f.uses=(f.uses||0)+1;
+  if(!f || !f.name) return;
   items.push({id:Date.now(), name:f.name, qty:1, price:Number(f.price)||0, store:f.store, person:"Famille", category:f.category, done:false});
+  f.uses=(f.uses||0)+1;
   await writeCloud();
 };
 
@@ -386,88 +389,100 @@ window.editFav = function(id){
   const f = favs.find(x=>x.id===id);
   if(!f) return;
   editingFavId = id;
-  $("editName").value = f.name;
-  $("editPrice").value = String(f.price).replace(".",",");
-  $("editStore").value = f.store;
-  $("editCategory").value = f.category;
+  $("editName").value = f.name || "";
+  $("editPrice").value = String(f.price||0).replace(".",",");
+  renderStoreOptions(); renderCategoryOptions();
+  $("editStore").value = f.store || stores[0];
+  $("editCategory").value = f.category || categories[0].name;
   $("editBox").style.display = "block";
   $("editBox").scrollIntoView({behavior:"smooth"});
 };
-
 window.saveFavEdit = async function(){
   let n=$("editName").value.trim(), p=parseMoney($("editPrice").value), s=$("editStore").value, c=$("editCategory").value;
+  if(!n){ alert("Nom du produit obligatoire."); return; }
   favs = favs.map(f=>f.id===editingFavId ? {...f, name:n, price:p, store:s, category:c} : f);
-  editingFavId = null;
-  $("editBox").style.display = "none";
+  editingFavId = null; $("editBox").style.display = "none";
   await writeCloud();
 };
-
 window.cancelFavEdit = function(){ editingFavId=null; $("editBox").style.display="none"; };
 window.deleteFav = async function(id){ favs=favs.filter(f=>f.id!==id); await writeCloud(); };
 window.toggle = async function(id){ items=items.map(i=>i.id===id ? {...i, done:!i.done} : i); await writeCloud(); };
 window.del = async function(id){ items=items.filter(i=>i.id!==id); await writeCloud(); };
 window.clearChecked = async function(){ items=items.filter(i=>!i.done); await writeCloud(); };
-window.restoreFavs = async function(){ if(confirm("Restaurer les produits fréquents ?")){ favs=makeFavs(); await writeCloud(); } };
+window.cleanBadFavs = async function(){
+  const catNames = categories.map(c=>c.name.toLowerCase());
+  const before = favs.length;
+  favs = favs.filter(f=>f.name && String(f.name).trim() && !catNames.includes(String(f.name).trim().toLowerCase()));
+  alert((before-favs.length) + " produit(s) vide(s) ou erreur(s) supprimé(s).");
+  await writeCloud();
+};
+window.restoreFavs = async function(){ if(confirm("Restaurer la base de départ ? Cela remplace les fréquents actuels.")){ favs=makeFavs(); await writeCloud(); } };
 window.resetAll = async function(){ if(confirm("Tout effacer ?")){ items=[]; favs=makeFavs(); await writeCloud(); } };
-
 
 window.addStore = async function(){
   const name = $("newStoreName").value.trim();
-  const color = $("newStoreColor").value;
+  const bg = $("newStoreBg").value;
+  const text = $("newStoreText").value;
   if(!name){ alert("Écris le nom du magasin."); return; }
   if(stores.some(s=>s.toLowerCase()===name.toLowerCase())){ alert("Ce magasin existe déjà."); return; }
   stores.push(name);
-  storeColors[name] = color;
+  storeStyles[name] = {bg,text};
   $("newStoreName").value = "";
-  renderStoreOptions();
   await writeCloud();
 };
-
 window.deleteStore = async function(name){
   const used = items.some(i=>i.store===name) || favs.some(f=>f.store===name);
-  if(used){ alert("Ce magasin est utilisé par des produits. Supprime ou modifie d'abord ces produits."); return; }
+  if(used){ alert("Ce magasin est utilisé par des produits. Modifie ou supprime d'abord ces produits."); return; }
   if(!confirm("Supprimer ce magasin ?")) return;
   stores = stores.filter(s=>s!==name);
-  delete storeColors[name];
+  delete storeStyles[name];
   if(activeStore===name) activeStore = stores[0] || "";
-  renderStoreOptions();
   await writeCloud();
 };
-
-window.changeStoreColor = async function(name, color){
-  storeColors[name] = color;
+window.changeStoreStyle = async function(name, key, value){
+  if(!storeStyles[name]) storeStyles[name]={bg:"#6b7280",text:"#ffffff"};
+  storeStyles[name][key]=value;
   await writeCloud();
 };
 
 function render(){
+  normalizeStoreStyles();
   renderStoreOptions();
+  renderCategoryOptions();
+
   $("favCount").textContent = favs.length;
-  $("quick").innerHTML = favs.map(f=>`<span class="favwrap"><button class="qbtn" onclick="quickAdd(${f.id})">+ ${f.name} <small>(${f.store}, ${money(f.price)})</small></button><button class="ebtn" onclick="editFav(${f.id})">Modifier</button><button class="xbtn" onclick="deleteFav(${f.id})">x</button></span>`).join("");
+
+  $("quick").innerHTML = favs.map(f=>`<span class="favwrap"><button class="qbtn" onclick="quickAdd(${f.id})">+ ${f.name || "(sans nom)"} <small>(${f.store}, ${money(f.price)})</small></button><button class="ebtn" onclick="editFav(${f.id})">Modifier</button><button class="xbtn" onclick="deleteFav(${f.id})">x</button></span>`).join("");
 
   const active = items.filter(i=>!i.done);
   const total = active.reduce((s,i)=>s+(Number(i.qty)||1)*(Number(i.price)||0),0);
   const by = {};
   active.forEach(i=>by[i.store]=(by[i.store]||0)+(Number(i.qty)||1)*(Number(i.price)||0));
-  $("stats").innerHTML = `<div class="stat"><strong>${active.length}</strong>Articles</div><div class="stat"><strong>${money(total)}</strong>Total estimé</div>` + stores.map(s=>`<div class="stat"><strong>${money(by[s]||0)}</strong>${s}</div>`).join("");
+  $("stats").innerHTML = `<div class="stat"><strong>${active.length}</strong>Articles</div><div class="stat"><strong>${money(total)}</strong>Total estimé</div>` + stores.map(s=>`<div class="stat"><strong>${money(by[s]||0)}</strong>${badge(s)}</div>`).join("");
 
   if(!items.length){
     $("list").innerHTML = '<div class="empty">Aucun produit.</div>';
   } else {
     const grouped = {};
     items.forEach(i=>(grouped[i.store]??=[]).push(i));
-    $("list").innerHTML = Object.keys(grouped).map(s=>`<h3>${badge(s)}</h3>` + grouped[s].map(i=>`<div class="item ${i.done?'done':''}"><input type="checkbox" ${i.done?'checked':''} onclick="toggle(${i.id})"><div><div class="main">${i.name} — Qté: ${i.qty} — <span class="price">${money((Number(i.qty)||1)*(Number(i.price)||0))}</span></div><div class="meta">${i.category} · ${i.person} · Prix: ${money(i.price)}</div></div><button class="danger" onclick="del(${i.id})">X</button></div>`).join("")).join("");
+    $("list").innerHTML = Object.keys(grouped).map(s=>`<h3>${badge(s)}</h3>` + grouped[s].map(i=>`<div class="item ${i.done?'done':''}"><input type="checkbox" ${i.done?'checked':''} onclick="toggle(${i.id})"><div><div class="main">${i.name} — Qté: ${i.qty} — <span class="price">${money((Number(i.qty)||1)*(Number(i.price)||0))}</span></div><div class="meta">${catIcon(i.category)} ${i.category} · ${i.person} · Prix: ${money(i.price)}</div></div><button class="danger" onclick="del(${i.id})">X</button></div>`).join("")).join("");
   }
 
   $("storeBtns").innerHTML = stores.map(s=>`<button class="${s===activeStore?'active':''}" onclick="selectStore('${s}')">${badge(s)}</button>`).join("");
-  const ps = favs.filter(f=>f.store===activeStore).sort((a,b)=>a.name.localeCompare(b.name));
-  $("storeProducts").innerHTML = `<h3>${badge(activeStore)} (${ps.length})</h3>` + ps.map(f=>`<div class="product"><div><b>${f.name}</b><div class="meta">${f.category} · ${money(f.price)}</div></div><div><button onclick="quickAdd(${f.id})">Ajouter</button> <button class="ebtn" onclick="showTab('fav');editFav(${f.id})">Modifier</button></div></div>`).join("");
+  const ps = favs.filter(f=>f.store===activeStore && f.name).sort((a,b)=>a.name.localeCompare(b.name));
+  $("storeProducts").innerHTML = `<h3>${badge(activeStore)} (${ps.length})</h3>` + ps.map(f=>`<div class="product"><div><b>${f.name}</b><div class="meta">${catIcon(f.category)} ${f.category} · ${money(f.price)}</div></div><div><button onclick="quickAdd(${f.id})">Ajouter</button> <button class="ebtn" onclick="showTab('fav');editFav(${f.id})">Modifier</button></div></div>`).join("");
+
+  $("categoryBtns").innerHTML = categories.map(c=>`<button class="${c.name===activeCategory?'active':''}" onclick="selectCategory('${c.name}')">${c.icon} ${c.name}</button>`).join("");
+  const cps = favs.filter(f=>f.category===activeCategory && f.name).sort((a,b)=>a.name.localeCompare(b.name));
+  $("categoryProducts").innerHTML = `<h3 class="categoryTitle">${catIcon(activeCategory)} ${activeCategory} (${cps.length})</h3>` + cps.map(f=>`<div class="product"><div><b>${f.name}</b><div class="meta">${badge(f.store)} ${money(f.price)}</div></div><div><button onclick="quickAdd(${f.id})">Ajouter</button> <button class="ebtn" onclick="showTab('fav');editFav(${f.id})">Modifier</button></div></div>`).join("");
 
   const sm = $("storesManager");
   if(sm){
-    sm.innerHTML = stores.map(s=>`<div class="storeRow"><div>${badge(s)} <span class="meta">${favs.filter(f=>f.store===s).length} produits fréquents</span></div><div><select onchange="changeStoreColor('${s}', this.value)"><option value="#ef4444">Rouge</option><option value="#2563eb">Bleu</option><option value="#f59e0b">Jaune/Orange</option><option value="#16a34a">Vert</option><option value="#7c3aed">Violet</option><option value="#6b7280">Gris</option></select> <button class="xbtn" onclick="deleteStore('${s}')">Supprimer</button></div></div>`).join("");
-    stores.forEach((s, idx)=>{ const selects = sm.querySelectorAll("select"); if(selects[idx]) selects[idx].value = storeColors[s] || "#6b7280"; });
+    sm.innerHTML = stores.map(s=>{
+      const style = storeStyles[s] || {bg:"#6b7280",text:"#ffffff"};
+      return `<div class="storeRow"><div>${badge(s)} <span class="meta">${favs.filter(f=>f.store===s).length} produits fréquents</span></div><div><label class="meta">Fond <input class="colorInput" type="color" value="${style.bg}" onchange="changeStoreStyle('${s}','bg',this.value)"></label> <label class="meta">Texte <input class="colorInput" type="color" value="${style.text}" onchange="changeStoreStyle('${s}','text',this.value)"></label> <button class="xbtn" onclick="deleteStore('${s}')">Supprimer</button></div></div>`;
+    }).join("");
   }
-
 }
 render();
 </script>
