@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Courses Famille V4.3.1.1 Login Famille</title>
+<title>Courses Famille.1 Login Famille</title>
 <style>
 body{margin:0;font-family:Arial;background:#f6f7fb;color:#172033}
 header{background:linear-gradient(135deg,#16a34a,#2563eb);color:white;padding:18px;border-radius:0 0 22px 22px}
@@ -33,12 +33,30 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 .familyLogin{display:grid;gap:12px;max-width:460px}
 .familyBadge{background:#eef2ff;color:#1e3a8a;border:1px solid #dbeafe;border-radius:16px;padding:14px;font-weight:bold;font-size:20px;text-align:center}
 #loginPassword{width:100%;box-sizing:border-box}
+
+body{background:#fff7ed!important;}
+header{background:linear-gradient(135deg,#14b8a6,#3b82f6)!important;box-shadow:0 8px 22px rgba(20,184,166,.22)}
+.card{border:1px solid rgba(255,255,255,.65)!important;box-shadow:0 8px 24px rgba(31,41,55,.08)!important}
+.card-search{background:#bfdbfe!important}
+.card-summary{background:#bbf7d0!important}
+.card-list{background:#e9d5ff!important}
+.card-fav{background:#fde68a!important}
+.card-store{background:#fed7aa!important}
+.card-tools{background:#e0e7ff!important}
+.card h2{color:#172033!important}
+.stat{background:rgba(255,255,255,.72)!important}
+.tabs{background:#fff7ed!important}
+.tabs button{background:#ffffff!important;color:#1e3a8a!important;border:1px solid #dbeafe!important}
+.tabs button.active{background:#2563eb!important;color:white!important}
+#syncStatus{display:none!important}
+.note:empty{display:none!important}
+
 </style>
 </head>
 <body>
 <header>
-<h1>🛒 Courses Famille V4.3.1</h1>
-<p id="syncStatus">Connexion familiale requise</p>
+<h1>🛒 Courses Famille</h1>
+<p id="syncStatus" style="display:none">Connexion familiale requise</p>
 </header>
 
 <main>
@@ -69,8 +87,8 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 </div>
 
 <section id="panelList" class="panel active">
-<div class="card">
-<h2>Rechercher / ajouter</h2>
+<div class="card card-search">
+<h2>🔍 Rechercher / ajouter</h2>
 <div class="row">
 <input id="productName" class="name" placeholder="Amandes, œufs, kefir..." autocomplete="off">
 <input id="qty" class="small" type="number" min="1" value="1">
@@ -81,14 +99,14 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 <button onclick="addItem()">Ajouter</button>
 </div>
 <div id="suggestions" class="suggestions"></div>
-<p class="note">V4.3.1 : connexion simplifiée “Famille” + données protégées par Firebase Auth.</p>
+
 </div>
-<div class="card"><h2>Résumé</h2><div id="stats" class="stats"></div></div>
-<div class="card"><h2>Liste</h2><div id="list"></div></div>
+<div class="card card-summary"><h2>📊 Résumé</h2><div id="stats" class="stats"></div></div>
+<div class="card card-list"><h2>📝 Liste</h2><div id="list"></div></div>
 </section>
 
 <section id="panelStore" class="panel">
-<div class="card"><h2>Produits par magasin</h2><div id="storeBtns" class="row storeBtns"></div><div id="storeProducts"></div></div>
+<div class="card card-store"><h2>🏪 Produits par magasin</h2><div id="storeBtns" class="row storeBtns"></div><div id="storeProducts"></div></div>
 </section>
 
 <section id="panelFav" class="panel">
@@ -103,7 +121,7 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 <button class="secondary" onclick="cancelFavEdit()">Annuler</button>
 </div>
 </div>
-<div class="card"><h2>Produits fréquents</h2><details><summary>Ouvrir / fermer (<span id="favCount"></span>)</summary><div id="quick" class="q"></div></details></div>
+<div class="card card-fav"><h2>⭐ Produits fréquents</h2><details><summary>Ouvrir / fermer (<span id="favCount"></span>)</summary><div id="quick" class="q"></div></details></div>
 </section>
 
 <section id="panelTools" class="panel">
@@ -212,7 +230,7 @@ function startSync(){
     } else {
       items = JSON.parse(localStorage.getItem("cf_items_v43") || "[]");
       favs = JSON.parse(localStorage.getItem("cf_favs_v43") || "null") || makeFavs();
-      set(dataRef, { items, favs, updatedAt: new Date().toISOString(), version: "4.3.1-family-login" });
+      set(dataRef, { items, favs, updatedAt: new Date().toISOString(), version: "4.4-family-design" });
       $("syncStatus").textContent = "✅ Base protégée créée";
     }
     saveLocal();
@@ -231,7 +249,7 @@ function saveLocal(){
 async function writeCloud(){
   if(applyingRemote || !dataRef) return;
   saveLocal();
-  await set(dataRef, {items, favs, updatedAt: new Date().toISOString(), version:"4.3.1-family-login"});
+  await set(dataRef, {items, favs, updatedAt: new Date().toISOString(), version:"4.4-family-design"});
   render();
 }
 
