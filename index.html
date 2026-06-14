@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Courses Famille V4.6</title>
+<title>Courses Famille V4.7</title>
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#fff7ed;color:#172033}
 header{background:linear-gradient(135deg,#14b8a6,#3b82f6);color:white;padding:18px;border-radius:0 0 28px 28px;box-shadow:0 8px 22px rgba(20,184,166,.22)}
@@ -41,6 +41,9 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 .categoryBtns button.active{background:#2563eb;color:#fff}
 .categoryTitle{display:flex;align-items:center;gap:8px;font-size:22px}
 .colorInput{width:56px;height:44px;padding:2px}
+
+.profileBox{background:#fff;border:1px solid #dbeafe;border-radius:16px;padding:10px}
+.profileBox select{max-width:220px}
 </style>
 </head>
 <body>
@@ -67,6 +70,17 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 <strong id="userInfo">Connecté : Famille Edan</strong>
 <button class="danger" onclick="logout()">Déconnexion</button>
 </div>
+<br>
+<div class="profileBox">
+<label>Qui ajoute les produits ?</label>
+<select id="currentPerson" onchange="setCurrentPerson(this.value)">
+<option>Edan</option>
+<option>Otilia</option>
+<option>Kayla</option>
+<option>Famille</option>
+</select>
+<p class="note">Ce choix est mémorisé sur ce téléphone. Les produits ajoutés porteront ce prénom.</p>
+</div>
 </div>
 
 <div class="tabs">
@@ -86,7 +100,7 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 <input id="qty" class="small" type="number" min="1" value="1">
 <input id="price" class="small" inputmode="decimal" placeholder="Prix $">
 <select id="store"></select>
-<select id="person"><option>Famille</option><option>Edan</option><option>Otilia</option><option>Kayla</option></select>
+<select id="person" onchange="setCurrentPerson(this.value)"><option>Edan</option><option>Otilia</option><option>Kayla</option><option>Famille</option></select>
 <select id="category"></select>
 <button onclick="addItem()">Ajouter</button>
 </div>
@@ -144,7 +158,7 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 <button class="secondary" onclick="cleanBadFavs()">Nettoyer produits vides / erreurs</button>
 <button class="secondary" onclick="restoreFavs()">Restaurer fréquents de départ</button>
 <button class="secondary" onclick="resetAll()">Réinitialiser</button>
-<p class="note">V4.6 : Types de produits + badges magasins avec couleur de fond et couleur d’écriture.</p>
+<p class="note">V4.7 : profil utilisateur + alerte doublon intelligente.</p>
 </div>
 </section>
 </section>
@@ -217,6 +231,7 @@ let items = [];
 let favs = makeFavs();
 let activeStore = "Costco";
 let activeCategory = "Viandes / Protéines";
+let currentRequester = localStorage.getItem("cf_current_person_v47") || "Edan";
 let editingFavId = null;
 let applyingRemote = false;
 let dataRef = null;
@@ -267,10 +282,28 @@ function saveLocal(){
   localStorage.setItem("cf_stores_v46", JSON.stringify(stores));
   localStorage.setItem("cf_storeStyles_v46", JSON.stringify(storeStyles));
 }
+function setProfileUI(){
+  const sel = $("currentPerson");
+  if(sel) sel.value = currentRequester;
+  const personSel = $("person");
+  if(personSel) personSel.value = currentRequester;
+}
+window.setCurrentPerson = function(name){
+  currentRequester = name || "Famille";
+  localStorage.setItem("cf_current_person_v47", currentRequester);
+  setProfileUI();
+};
+function duplicateMessage(name, store){
+  const dup = items.find(i => !i.done && (i.name||"").trim().toLowerCase() === String(name||"").trim().toLowerCase() && (i.store||"") === store);
+  if(!dup) return true;
+  const who = dup.person || "Famille";
+  return confirm("⚠️ " + name + " est déjà dans la liste (" + who + ").\n\nVoulez-vous quand même l’ajouter ?");
+}
+
 async function writeCloud(){
   if(applyingRemote || !dataRef) return;
   saveLocal();
-  await set(dataRef, {items, favs, stores, storeStyles, updatedAt:new Date().toISOString(), version:"4.6-types-stores"});
+  await set(dataRef, {items, favs, stores, storeStyles, updatedAt:new Date().toISOString(), version:"4.7-profile-duplicates"});
   render();
 }
 
@@ -319,7 +352,7 @@ function startSync(){
       favs = JSON.parse(localStorage.getItem("cf_favs_v46") || "null") || makeFavs();
       stores = JSON.parse(localStorage.getItem("cf_stores_v46") || "null") || stores;
       storeStyles = JSON.parse(localStorage.getItem("cf_storeStyles_v46") || "null") || storeStyles;
-      set(dataRef, {items, favs, stores, storeStyles, updatedAt:new Date().toISOString(), version:"4.6-types-stores"});
+      set(dataRef, {items, favs, stores, storeStyles, updatedAt:new Date().toISOString(), version:"4.7-profile-duplicates"});
     }
     normalizeStoreStyles();
     saveLocal();
@@ -367,8 +400,9 @@ window.addItem = async function(){
   let p = parseMoney($("price").value);
   let s = $("store").value;
   if(!s){ alert("Choisis un magasin."); return; }
-  let per = $("person").value;
+  let per = currentRequester || $("person").value || "Famille";
   let c = $("category").value;
+  if(!duplicateMessage(n, s)) return;
   items.push({id:Date.now(), name:n, qty:q, price:p, store:s, person:per, category:c, done:false});
   let f = favs.find(x=>(x.name||"").toLowerCase()===n.toLowerCase() && x.store===s);
   if(f){ f.price=p; f.category=c; f.uses=(f.uses||0)+1; }
@@ -380,7 +414,8 @@ window.addItem = async function(){
 window.quickAdd = async function(id){
   const f = favs.find(x=>x.id===id);
   if(!f || !f.name) return;
-  items.push({id:Date.now(), name:f.name, qty:1, price:Number(f.price)||0, store:f.store, person:"Famille", category:f.category, done:false});
+  if(!duplicateMessage(f.name, f.store)) return;
+  items.push({id:Date.now(), name:f.name, qty:1, price:Number(f.price)||0, store:f.store, person:currentRequester || "Famille", category:f.category, done:false});
   f.uses=(f.uses||0)+1;
   await writeCloud();
 };
@@ -449,6 +484,7 @@ function render(){
   normalizeStoreStyles();
   renderStoreOptions();
   renderCategoryOptions();
+  setProfileUI();
 
   $("favCount").textContent = favs.length;
 
