@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Courses Famille </title>
+<title>Courses Famille V5.1 Stable</title>
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#fff7ed;color:#172033}
 header{background:linear-gradient(135deg,#14b8a6,#3b82f6);color:white;padding:18px;border-radius:0 0 28px 28px;box-shadow:0 8px 22px rgba(20,184,166,.22)}
@@ -44,11 +44,23 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 
 .profileBox{background:#fff;border:1px solid #dbeafe;border-radius:16px;padding:10px}
 .profileBox select{max-width:220px}
+
+.photoBtn{background:#0ea5e9;color:white;border-radius:999px;padding:7px 10px;font-size:14px;margin-left:4px}
+.photoPreview{max-width:130px;max-height:130px;border-radius:14px;border:1px solid #e5e7eb;margin-top:8px;display:none}
+.photoRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.photoModalBg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:99;align-items:center;justify-content:center;padding:20px}
+.photoModal{background:white;color:#172033;border-radius:20px;padding:14px;max-width:92vw;max-height:90vh;text-align:center}
+.photoModal img{max-width:86vw;max-height:70vh;border-radius:16px}
+.photoModal button{margin-top:10px}
+
+.typeManager{background:#fff7cc;border:3px solid #f59e0b;border-radius:18px;padding:16px;margin-bottom:18px;box-shadow:0 8px 18px rgba(245,158,11,.18)}
+.typeRow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border-bottom:1px solid rgba(0,0,0,.08);padding:10px 0}
+.iconInput{width:90px}
 </style>
 </head>
 <body>
 <header>
-<h1>🛒 Courses Famille </h1>
+<h1>🛒 Courses Famille</h1>
 <p id="syncStatus" style="display:none">Connexion familiale requise</p>
 </header>
 
@@ -116,7 +128,17 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 
 <section id="panelTypes" class="panel">
 <div class="card card-types">
-<h2>📂 Types de produits</h2>
+<h2>📂 Types de produits <small style="font-size:12px;background:#16a34a;color:white;padding:4px 8px;border-radius:999px">V5.1.1</small></h2>
+<div class="typeManager">
+<h3 style="font-size:22px;margin-top:0">➕ AJOUTER UN NOUVEAU TYPE</h3>
+<div class="row">
+<input id="newCategoryName" class="name" placeholder="Ex : Produits surgelés">
+<input id="newCategoryIcon" class="iconInput" maxlength="12" placeholder="🧊">
+<button onclick="addCategory()">Ajouter</button>
+</div>
+<p class="note">Choisis un petit symbole ou emoji : 🧊 🐟 🍗 🥫 🍪 🧴 🧻…</p>
+<div id="categoriesManager"></div>
+</div>
 <div id="categoryBtns" class="categoryBtns"></div>
 <div id="categoryProducts"></div>
 </div>
@@ -147,6 +169,13 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 <button class="warning" onclick="saveFavEdit()">Mettre à jour</button>
 <button class="secondary" onclick="cancelFavEdit()">Annuler</button>
 </div>
+<div class="photoRow">
+<label class="note">Photo du produit <input id="editPhotoFile" type="file" accept="image/*"></label>
+<input id="editPhotoUrl" class="name" placeholder="Ou coller un lien image https://...">
+<button class="secondary" onclick="removeCurrentPhoto()">Retirer photo</button>
+</div>
+<img id="editPhotoPreview" class="photoPreview">
+<p class="note">Photos facultatives. Conseil : garde environ 20 à 30 photos maximum pour les produits qu’on confond souvent.</p>
 </div>
 <div class="card card-fav"><h2>⭐ Produits fréquents</h2><details open><summary>Ouvrir / fermer (<span id="favCount"></span>)</summary><div id="quick" class="q"></div></details></div>
 </section>
@@ -158,7 +187,7 @@ input.name{flex:2;min-width:180px}.small{width:105px}select{min-width:130px}
 <button class="secondary" onclick="cleanBadFavs()">Nettoyer produits vides / erreurs</button>
 <button class="secondary" onclick="restoreFavs()">Restaurer fréquents de départ</button>
 <button class="secondary" onclick="resetAll()">Réinitialiser</button>
-<p class="note">V4.7 : profil utilisateur + alerte doublon intelligente.</p>
+<p class="note">V5.1.1 : photos produits + ajout, modification et suppression des types.</p>
 </div>
 </section>
 </section>
@@ -183,7 +212,7 @@ const firebaseConfig = {
 };
 
 const $ = id => document.getElementById(id);
-const categories = [
+let categories = [
   {name:"Viandes / Protéines", icon:"🥩"},
   {name:"Produits laitiers", icon:"🥛"},
   {name:"Légumes", icon:"🥦"},
@@ -233,6 +262,8 @@ let activeStore = "Costco";
 let activeCategory = "Viandes / Protéines";
 let currentRequester = localStorage.getItem("cf_current_person_v47") || "Edan";
 let editingFavId = null;
+let pendingPhotoData = null;
+let pendingRemovePhoto = false;
 let applyingRemote = false;
 let dataRef = null;
 
@@ -281,6 +312,7 @@ function saveLocal(){
   localStorage.setItem("cf_favs_v46", JSON.stringify(favs));
   localStorage.setItem("cf_stores_v46", JSON.stringify(stores));
   localStorage.setItem("cf_storeStyles_v46", JSON.stringify(storeStyles));
+  localStorage.setItem("cf_categories_v51", JSON.stringify(categories));
 }
 function setProfileUI(){
   const sel = $("currentPerson");
@@ -303,7 +335,7 @@ function duplicateMessage(name, store){
 async function writeCloud(){
   if(applyingRemote || !dataRef) return;
   saveLocal();
-  await set(dataRef, {items, favs, stores, storeStyles, updatedAt:new Date().toISOString(), version:"4.7-profile-duplicates"});
+  await set(dataRef, {items, favs, stores, storeStyles, categories, updatedAt:new Date().toISOString(), version:"5.1.1-custom-types-stable"});
   render();
 }
 
@@ -317,6 +349,21 @@ window.login = async function(){
   }
 };
 $("loginPassword").addEventListener("keydown", e=>{ if(e.key==="Enter") window.login(); });
+document.addEventListener("change", async (e)=>{
+  if(e.target && e.target.id === "editPhotoFile"){
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    if(countFavPhotos() >= 30 && !photoSrc(favs.find(x=>x.id===editingFavId))){
+      alert("Limite conseillée atteinte : 30 produits avec photo. Retire une photo avant d’en ajouter une nouvelle.");
+      e.target.value = "";
+      return;
+    }
+    pendingPhotoData = await resizeImageFile(file);
+    pendingRemovePhoto = false;
+    $("editPhotoUrl").value = "";
+    updatePhotoPreview(pendingPhotoData);
+  }
+});
 window.logout = async function(){ await signOut(auth); };
 
 onAuthStateChanged(auth, (user)=>{
@@ -342,6 +389,7 @@ function startSync(){
       items = Array.isArray(data.items) ? data.items : [];
       favs = Array.isArray(data.favs) ? data.favs : makeFavs();
       stores = Array.isArray(data.stores) ? data.stores : stores;
+      categories = Array.isArray(data.categories) ? data.categories : categories;
       if(data.storeStyles) storeStyles = data.storeStyles;
       else if(data.storeColors){
         storeStyles = {};
@@ -351,8 +399,9 @@ function startSync(){
       items = JSON.parse(localStorage.getItem("cf_items_v46") || "[]");
       favs = JSON.parse(localStorage.getItem("cf_favs_v46") || "null") || makeFavs();
       stores = JSON.parse(localStorage.getItem("cf_stores_v46") || "null") || stores;
+      categories = JSON.parse(localStorage.getItem("cf_categories_v51") || "null") || categories;
       storeStyles = JSON.parse(localStorage.getItem("cf_storeStyles_v46") || "null") || storeStyles;
-      set(dataRef, {items, favs, stores, storeStyles, updatedAt:new Date().toISOString(), version:"4.7-profile-duplicates"});
+      set(dataRef, {items, favs, stores, storeStyles, categories, updatedAt:new Date().toISOString(), version:"5.1.1-custom-types-stable"});
     }
     normalizeStoreStyles();
     saveLocal();
@@ -420,6 +469,70 @@ window.quickAdd = async function(id){
   await writeCloud();
 };
 
+
+function photoSrc(f){
+  return f && (f.photoData || f.photoUrl || "");
+}
+function countFavPhotos(){
+  return favs.filter(f=>photoSrc(f)).length;
+}
+function photoButton(f){
+  return photoSrc(f) ? `<button class="photoBtn" onclick="viewPhoto(${f.id})">📷</button>` : "";
+}
+window.viewPhoto = function(id){
+  const f = favs.find(x=>x.id===id);
+  const src = photoSrc(f);
+  if(!src) return;
+  $("photoTitle").textContent = f.name || "Photo produit";
+  $("photoModalImg").src = src;
+  $("photoModalBg").style.display = "flex";
+};
+window.closePhoto = function(){
+  $("photoModalBg").style.display = "none";
+  $("photoModalImg").src = "";
+};
+function updatePhotoPreview(src){
+  const img = $("editPhotoPreview");
+  if(!img) return;
+  if(src){
+    img.src = src;
+    img.style.display = "block";
+  } else {
+    img.src = "";
+    img.style.display = "none";
+  }
+}
+function resizeImageFile(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const max = 800;
+        let w = img.width, h = img.height;
+        if(w > h && w > max){ h = Math.round(h * max / w); w = max; }
+        else if(h >= w && h > max){ w = Math.round(w * max / h); h = max; }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL("image/jpeg",0.72));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+window.removeCurrentPhoto = function(){
+  pendingPhotoData = null;
+  pendingRemovePhoto = true;
+  $("editPhotoUrl").value = "";
+  $("editPhotoFile").value = "";
+  updatePhotoPreview("");
+};
+
 window.editFav = function(id){
   const f = favs.find(x=>x.id===id);
   if(!f) return;
@@ -429,14 +542,31 @@ window.editFav = function(id){
   renderStoreOptions(); renderCategoryOptions();
   $("editStore").value = f.store || stores[0];
   $("editCategory").value = f.category || categories[0].name;
+  pendingPhotoData = null;
+  pendingRemovePhoto = false;
+  $("editPhotoUrl").value = f.photoUrl || "";
+  $("editPhotoFile").value = "";
+  updatePhotoPreview(photoSrc(f));
   $("editBox").style.display = "block";
   $("editBox").scrollIntoView({behavior:"smooth"});
 };
 window.saveFavEdit = async function(){
   let n=$("editName").value.trim(), p=parseMoney($("editPrice").value), s=$("editStore").value, c=$("editCategory").value;
   if(!n){ alert("Nom du produit obligatoire."); return; }
-  favs = favs.map(f=>f.id===editingFavId ? {...f, name:n, price:p, store:s, category:c} : f);
-  editingFavId = null; $("editBox").style.display = "none";
+  const url = $("editPhotoUrl").value.trim();
+  if(url && countFavPhotos() >= 30 && !photoSrc(favs.find(x=>x.id===editingFavId))){
+    alert("Limite conseillée atteinte : 30 produits avec photo.");
+    return;
+  }
+  favs = favs.map(f=>{
+    if(f.id!==editingFavId) return f;
+    let updated = {...f, name:n, price:p, store:s, category:c};
+    if(pendingRemovePhoto){ delete updated.photoData; delete updated.photoUrl; }
+    if(pendingPhotoData){ updated.photoData = pendingPhotoData; delete updated.photoUrl; }
+    if(url){ updated.photoUrl = url; delete updated.photoData; }
+    return updated;
+  });
+  editingFavId = null; pendingPhotoData=null; pendingRemovePhoto=false; $("editBox").style.display = "none";
   await writeCloud();
 };
 window.cancelFavEdit = function(){ editingFavId=null; $("editBox").style.display="none"; };
@@ -480,6 +610,32 @@ window.changeStoreStyle = async function(name, key, value){
   await writeCloud();
 };
 
+
+window.addCategory = async function(){
+  const name = $("newCategoryName").value.trim();
+  const icon = $("newCategoryIcon").value.trim() || "📦";
+  if(!name){ alert("Écris le nom du type."); return; }
+  if(categories.some(c=>c.name.toLowerCase()===name.toLowerCase())){ alert("Ce type existe déjà."); return; }
+  categories.push({name, icon});
+  $("newCategoryName").value = "";
+  $("newCategoryIcon").value = "";
+  activeCategory = name;
+  await writeCloud();
+};
+window.deleteCategory = async function(name){
+  const used = items.some(i=>i.category===name) || favs.some(f=>f.category===name);
+  if(used){ alert("Ce type est utilisé par des produits. Modifie d’abord ces produits."); return; }
+  if(!confirm("Supprimer ce type ?")) return;
+  categories = categories.filter(c=>c.name!==name);
+  if(activeCategory===name) activeCategory = categories[0]?.name || "";
+  await writeCloud();
+};
+window.updateCategoryIcon = async function(name, icon){
+  const value = String(icon||"").trim() || "📦";
+  categories = categories.map(c=>c.name===name ? {...c, icon:value} : c);
+  await writeCloud();
+};
+
 function render(){
   normalizeStoreStyles();
   renderStoreOptions();
@@ -488,7 +644,7 @@ function render(){
 
   $("favCount").textContent = favs.length;
 
-  $("quick").innerHTML = favs.map(f=>`<span class="favwrap"><button class="qbtn" onclick="quickAdd(${f.id})">+ ${f.name || "(sans nom)"} <small>(${f.store}, ${money(f.price)})</small></button><button class="ebtn" onclick="editFav(${f.id})">Modifier</button><button class="xbtn" onclick="deleteFav(${f.id})">x</button></span>`).join("");
+  $("quick").innerHTML = favs.map(f=>`<span class="favwrap"><button class="qbtn" onclick="quickAdd(${f.id})">+ ${f.name || "(sans nom)"} <small>(${f.store}, ${money(f.price)})</small></button>${photoButton(f)}<button class="ebtn" onclick="editFav(${f.id})">Modifier</button><button class="xbtn" onclick="deleteFav(${f.id})">x</button></span>`).join("");
 
   const active = items.filter(i=>!i.done);
   const total = active.reduce((s,i)=>s+(Number(i.qty)||1)*(Number(i.price)||0),0);
@@ -506,11 +662,20 @@ function render(){
 
   $("storeBtns").innerHTML = stores.map(s=>`<button class="${s===activeStore?'active':''}" onclick="selectStore('${s}')">${badge(s)}</button>`).join("");
   const ps = favs.filter(f=>f.store===activeStore && f.name).sort((a,b)=>a.name.localeCompare(b.name));
-  $("storeProducts").innerHTML = `<h3>${badge(activeStore)} (${ps.length})</h3>` + ps.map(f=>`<div class="product"><div><b>${f.name}</b><div class="meta">${catIcon(f.category)} ${f.category} · ${money(f.price)}</div></div><div><button onclick="quickAdd(${f.id})">Ajouter</button> <button class="ebtn" onclick="showTab('fav');editFav(${f.id})">Modifier</button></div></div>`).join("");
+  $("storeProducts").innerHTML = `<h3>${badge(activeStore)} (${ps.length})</h3>` + ps.map(f=>`<div class="product"><div><b>${f.name}</b><div class="meta">${catIcon(f.category)} ${f.category} · ${money(f.price)}</div></div><div><button onclick="quickAdd(${f.id})">Ajouter</button> ${photoButton(f)} <button class="ebtn" onclick="showTab('fav');editFav(${f.id})">Modifier</button></div></div>`).join("");
 
   $("categoryBtns").innerHTML = categories.map(c=>`<button class="${c.name===activeCategory?'active':''}" onclick="selectCategory('${c.name}')">${c.icon} ${c.name}</button>`).join("");
   const cps = favs.filter(f=>f.category===activeCategory && f.name).sort((a,b)=>a.name.localeCompare(b.name));
-  $("categoryProducts").innerHTML = `<h3 class="categoryTitle">${catIcon(activeCategory)} ${activeCategory} (${cps.length})</h3>` + cps.map(f=>`<div class="product"><div><b>${f.name}</b><div class="meta">${badge(f.store)} ${money(f.price)}</div></div><div><button onclick="quickAdd(${f.id})">Ajouter</button> <button class="ebtn" onclick="showTab('fav');editFav(${f.id})">Modifier</button></div></div>`).join("");
+  $("categoryProducts").innerHTML = `<h3 class="categoryTitle">${catIcon(activeCategory)} ${activeCategory} (${cps.length})</h3>` + cps.map(f=>`<div class="product"><div><b>${f.name}</b><div class="meta">${badge(f.store)} ${money(f.price)}</div></div><div><button onclick="quickAdd(${f.id})">Ajouter</button> ${photoButton(f)} <button class="ebtn" onclick="showTab('fav');editFav(${f.id})">Modifier</button></div></div>`).join("");
+
+
+  const cm = $("categoriesManager");
+  if(cm){
+    cm.innerHTML = categories.map(c=>{
+      const count = favs.filter(f=>f.category===c.name).length;
+      return `<div class="typeRow"><div><b>${c.icon} ${c.name}</b><div class="meta">${count} produit(s)</div></div><div><input class="iconInput" value="${c.icon}" maxlength="12" onchange="updateCategoryIcon('${c.name}', this.value)"> <button class="xbtn" onclick="deleteCategory('${c.name}')">Supprimer</button></div></div>`;
+    }).join("");
+  }
 
   const sm = $("storesManager");
   if(sm){
@@ -522,5 +687,14 @@ function render(){
 }
 render();
 </script>
+
+<div class="photoModalBg" id="photoModalBg">
+  <div class="photoModal">
+    <h2 id="photoTitle">Photo produit</h2>
+    <img id="photoModalImg" alt="Photo produit">
+    <button class="danger" onclick="closePhoto()">Fermer</button>
+  </div>
+</div>
+
 </body>
 </html>
